@@ -8,22 +8,19 @@ package rkimp;
 public class Compound{
 	
 	private String name;
-	private double mObs;
+	private double mObs; //mass of headgroup
 	private double refKMD;
 	private int nChains;
+	private int minC = -1;
+	private int maxC = -1;
 	
-	public Compound(String auxName, int auxNChains, double auxMObs, double auxRefKMD){
+	public Compound(String auxName, int auxNChains, double auxMObs, double auxRefKMD, int auxMinC, int auxMaxC){
 		this.name = auxName;
 		this.nChains = auxNChains;
 		this.mObs = auxMObs;
 		this.refKMD = auxRefKMD;
-	}
-	
-	public Compound(String auxName, int auxNChains, double auxRefKMD){
-		this.name = auxName;
-		this.nChains = auxNChains;
-		this.refKMD = auxRefKMD;
-		this.mObs = -1; //any mObs < 0 denotes that mObs has not been set
+		this.minC = auxMinC;
+		this.maxC = auxMaxC;
 	}
 	
 	//accessors:
@@ -42,6 +39,16 @@ public class Compound{
 	
 	public double getNC(){
 		return this.nChains;
+	}
+	
+	public boolean inRange(int auxCNo){
+		return (auxCNo <= this.maxC) && (auxCNo >= this.minC);
+	}
+	
+	public String getInfo(){
+		String temp = this.name + " KMD = " + this.refKMD + " , NC=" + this.nChains + " , HM=" + this.mObs;
+		temp += ", xE[" + this.minC + "," + this.maxC + "]";
+		return temp;
 	}
 	
 	
