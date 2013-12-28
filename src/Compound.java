@@ -41,7 +41,7 @@ public class Compound{
 		return this.nChains;
 	}
 	
-	public boolean inRange(int auxCNo){
+	public boolean inRange(double auxCNo){
 		return (auxCNo <= this.maxC) && (auxCNo >= this.minC);
 	}
 	

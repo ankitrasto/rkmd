@@ -236,7 +236,7 @@ public class rkmdBackEnd{
 			symbol = "";
 			numerical = "";
 			boolean incremented = false;
-			System.out.println(formula.charAt(strIndex));
+			//System.out.println(formula.charAt(strIndex));
 			if(formula.charAt(strIndex) >= 65 && formula.charAt(strIndex) <= 90){
 				symbol += formula.charAt(strIndex);				
 				if(strIndex < formula.length()-1){
@@ -260,7 +260,7 @@ public class rkmdBackEnd{
 				
 			}
 			
-			System.out.println("Symbol: " + symbol + " Numerical = " + numerical + "StrIndex = " + strIndex);
+			//System.out.println("Symbol: " + symbol + " Numerical = " + numerical + "StrIndex = " + strIndex);
 			//compute masses, if applicable
 			if(!symbol.equalsIgnoreCase(""));{
 				if(!numerical.equalsIgnoreCase("")){
@@ -308,7 +308,7 @@ public class rkmdBackEnd{
 	// return true;
 	//}
 	
-	public void calculate(double rkmdTol, double NTCTol){
+	public void calculate(double rkmdTol, double NTCTol) throws Exception{
 		final double c1 = 14/14.01565;
 		final double c2 = 0.013399;
 		this.rkmdTolerance = rkmdTol;
@@ -321,28 +321,47 @@ public class rkmdBackEnd{
 				double rKMD = (1.0/c2)*((c1*(double)inputMObs.get(i))%1 - inputRefSpecies[j].getRefKMD()); //metric 1 (S1 - see implementation note, eq. 5)
 				//System.out.println(inputRefSpecies[j].getName() + "\t\t" + rKMD); //test verbose
 				if((Math.abs(Math.round(rKMD) - rKMD)) <= this.rkmdTolerance){
-					matchResults[i] += (double)inputMObs.get(i) + "\tHIT:\t" + inputRefSpecies[j].getName() + "\t" + rKMD + "\t" + (Math.abs(Math.round(rKMD) - rKMD)) + "\n";
+					matchResults[i] += (double)inputMObs.get(i) + "\tHIT:\t" + inputRefSpecies[j].getName() + "\t" + rKMD + "\t" + (Math.abs(Math.round(rKMD) - rKMD));
+					
+					//only perform NTC calculations for admissable RKMDs:
+					String adductExtract = (this.inputRefSpecies[j].getName()).split(";")[2];
+					double mAdduct = this.exactMass(adductExtract.substring(3, adductExtract.indexOf("]")));
+					if(adductExtract.charAt(2) == '-') mAdduct *= -1;
+					//System.out.println(adductExtract + "\t" + mAdduct);
+					
+					double mIso = (double)this.inputMObs.get(i) - (inputRefSpecies[j].getmObs() + mAdduct);
+					double numHold = ((mIso + 2*exactMass("H")*Math.abs(Math.round(rKMD)))/inputRefSpecies[j].getNC()) + exactMass("H") - exactMass("O");
+					double denomHold = (exactMass("C") + 2*exactMass("H"));
+						//if((double)inputMObs.get(i) == 678.507838079542) System.out.println(adductExtract + inputRefSpecies[j].getmObs() + "\t" + numHold/denomHold);
+					double nTC = inputRefSpecies[j].getNC()*(numHold/denomHold);
+					
+					if((Math.abs(Math.round(nTC) - nTC) <= this.NTCTolerance) && inputRefSpecies[j].inRange(nTC)){
+						matchResults[i] += "\tNTC_HIT\t" + Math.round(nTC) + "\t" + (Math.abs(Math.round(nTC) - nTC)) + "\t" + inputRefSpecies[j].getName().split(";")[1] + " [" + Math.round(nTC) + ":" + inputRefSpecies[j].getNC() + "]" + inputRefSpecies[j].getName().split(";")[2] + "\n";
+					}else{
+						matchResults[i] += "\tNTC_MISS\t" + Math.round(nTC) + "\t" + (Math.abs(Math.round(nTC) - nTC)) + "\n";
+					}
+					
 				}else{
 					matchResults[i] += (double)inputMObs.get(i) + "\tMISS:\t" + inputRefSpecies[j].getName() + "\t" + rKMD + "\t" + (Math.abs(Math.round(rKMD) - rKMD)) + "\n";
 				}
-				
-				//double NTC = 
-				
 			}
 			
 		}
 		
-		//verbose testing
+		/*verbose testing
 		for(int i = 0; i < matchResults.length; i++){
 			System.out.println("-----m/z = " + (double)this.inputMObs.get(i) + " ---------");
 			System.out.println(this.matchResults[i]);
-		}
+		}*/
 	}
 	
 	public void writeToFile(String fOutput, int option) throws Exception{
 		File output = new File(fOutput);
 		PrintWriter pW = new PrintWriter(new FileWriter(fOutput, false));
 		
+		String header = "m/z \t MATCH_RESULT \t Compound_Name \t RKMD \t RKMD_Tolerance \t NTC_RESULT \t Total_Carbons \t Carbon_Tolerance \t Matched Lipid-ID";
+		
+		pW.println(header);
 		
 		for(int i = 0; i < this.matchResults.length; i++){
 			if(option == 1){ //display HITS and MISSES
@@ -388,7 +407,7 @@ public class rkmdBackEnd{
 		rkimp.rkmdBackEnd test = new rkimp.rkmdBackEnd(path+"masses.txt", path+"periodicMasses.csv", path+"ReferenceKMD.csv");
 		test.loadFileInput();
 		System.out.println(test.exactMass("Mn"));
-		test.calculate(0.05, 0.05);
+		test.calculate(1.0, 0.01);
 		
 		test.writeToFile("Results.txt", 1);
 		test.writeToFile("Results2.txt", 2);
