@@ -226,7 +226,7 @@ public class rkmdBackEnd{
 	}
 	
 	
-	//REQUIRES: REFERENCE atomic masses be loaded!
+	//REQUIRES: REFERENCE atomic masses to be loaded!
 	public double exactMass(String formula) throws Exception{
 		int strIndex = 0;
 		String symbol;
@@ -304,8 +304,62 @@ public class rkmdBackEnd{
 		return spaceSep;
 	}
 	
-	private boolean checkInput(int criteria, ArrayList<String> auxData){
-	 return true;
+	//private boolean checkInput(int criteria, ArrayList<String> auxData){
+	// return true;
+	//}
+	
+	public void calculate(double rkmdTol, double NTCTol){
+		final double c1 = 14/14.01565;
+		final double c2 = 0.013399;
+		this.rkmdTolerance = rkmdTol;
+		this.NTCTolerance = NTCTol;
+		this.matchResults = new String[this.inputMObs.size()];
+		
+		for(int i = 0; i < inputMObs.size(); i++){
+			matchResults[i] = "";
+			for(int j = 0; j < inputRefSpecies.length; j++){
+				double rKMD = (1.0/c2)*((c1*(double)inputMObs.get(i))%1 - inputRefSpecies[j].getRefKMD()); //metric 1 (S1 - see implementation note, eq. 5)
+				//System.out.println(inputRefSpecies[j].getName() + "\t\t" + rKMD); //test verbose
+				if((Math.abs(Math.round(rKMD) - rKMD)) <= this.rkmdTolerance){
+					matchResults[i] += (double)inputMObs.get(i) + "\tHIT:\t" + inputRefSpecies[j].getName() + "\t" + rKMD + "\t" + (Math.abs(Math.round(rKMD) - rKMD)) + "\n";
+				}else{
+					matchResults[i] += (double)inputMObs.get(i) + "\tMISS:\t" + inputRefSpecies[j].getName() + "\t" + rKMD + "\t" + (Math.abs(Math.round(rKMD) - rKMD)) + "\n";
+				}
+				
+				//double NTC = 
+				
+			}
+			
+		}
+		
+		//verbose testing
+		for(int i = 0; i < matchResults.length; i++){
+			System.out.println("-----m/z = " + (double)this.inputMObs.get(i) + " ---------");
+			System.out.println(this.matchResults[i]);
+		}
+	}
+	
+	public void writeToFile(String fOutput, int option) throws Exception{
+		File output = new File(fOutput);
+		PrintWriter pW = new PrintWriter(new FileWriter(fOutput, false));
+		
+		
+		for(int i = 0; i < this.matchResults.length; i++){
+			if(option == 1){ //display HITS and MISSES
+				pW.println(matchResults[i]);
+			}
+			
+			if(option == 2){ //display ONLY HITS
+				String[] lineHold = matchResults[i].split("\n");
+				for(int j = 0; j < lineHold.length; j++){
+					if(!(lineHold[j].indexOf("HIT") < 0)){
+						pW.println(lineHold[j]);
+					} 
+				}
+			}
+		}
+		
+		pW.close();
 	}
 	
 	
@@ -334,6 +388,10 @@ public class rkmdBackEnd{
 		rkimp.rkmdBackEnd test = new rkimp.rkmdBackEnd(path+"masses.txt", path+"periodicMasses.csv", path+"ReferenceKMD.csv");
 		test.loadFileInput();
 		System.out.println(test.exactMass("Mn"));
+		test.calculate(0.05, 0.05);
+		
+		test.writeToFile("Results.txt", 1);
+		test.writeToFile("Results2.txt", 2);
 		
 		
 		//String test2 = "\t      quick brown \t fox       jumps over,lazy dog,!";

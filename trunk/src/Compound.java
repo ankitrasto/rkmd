@@ -45,6 +45,10 @@ public class Compound{
 		return (auxCNo <= this.maxC) && (auxCNo >= this.minC);
 	}
 	
+	public String getName(){
+		return this.name;
+	}
+	
 	public String getInfo(){
 		String temp = this.name + " KMD = " + this.refKMD + " , NC=" + this.nChains + " , HM=" + this.mObs;
 		temp += ", xE[" + this.minC + "," + this.maxC + "]";
