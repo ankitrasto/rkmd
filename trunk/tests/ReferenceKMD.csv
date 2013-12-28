@@ -6,8 +6,8 @@ Ceramides/Ceramide_phosphates/Sphingomyelins,Ceramide(d18:1),[M+H]+,298.274604,0
 Ceramides/Ceramide_phosphates/Sphingomyelins,Ceramide(d17:1),[M+H]+,284.258954,0.918054,1,9,25
 <None>,CE,[M+NH4]+,385.34704,0.900799606,1,9,25
 <None>,FA,[M-H]-,17.00274,0.9474102164,1,9,25
-Glycerophospholipids,PE,[M+H]+,213.040227,0.749206,2,27,44
-Glycerophospholipids,PC,[M+H]+,255.087177,0.749206,2,27,44
+Glycerophospholipids,PE,[M+H]+,213.040227,0.749752982558789,2,27,44
+Glycerophospholipids,PC,[M+H]+,255.087177,0.749752982558789,2,27,44
 Glycerolipids,DAG,[M+NH4]+,90.031695,0.885564,2,19,50
 Glycerophospholipids,PC,[M-H]-,255.087177,0.736904,2,19,50
 Glycerophospholipids,PG,[M-H]-,244.034808,0.696876,2,19,50

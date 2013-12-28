@@ -3,6 +3,7 @@
 # Use the '#' symbol to make comments as a new line or inline with your m/z values, provided that they are placed AFTER your m/z value has been entered
 # Do not leave any blank lines in this file.
 699.4141705
+678.507838079542
 761.5182542
 761.5186767
 787.5327882
