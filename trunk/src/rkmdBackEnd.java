@@ -407,7 +407,7 @@ public class rkmdBackEnd{
 		rkimp.rkmdBackEnd test = new rkimp.rkmdBackEnd(path+"masses.txt", path+"periodicMasses.csv", path+"ReferenceKMD.csv");
 		test.loadFileInput();
 		System.out.println(test.exactMass("Mn"));
-		test.calculate(1.0, 0.01);
+		test.calculate(0.27, 0.01);
 		
 		test.writeToFile("Results.txt", 1);
 		test.writeToFile("Results2.txt", 2);
