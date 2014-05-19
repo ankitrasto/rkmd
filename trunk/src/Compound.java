@@ -126,8 +126,5 @@ this.nChains + " , HM=" + this.mObs;
 		temp += ", xE[" + this.minC + "," + this.maxC + "]";
 		return temp;
 	}
-	
-	
- 
  
 }

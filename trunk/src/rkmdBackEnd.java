@@ -68,6 +68,35 @@ public class rkmdBackEnd{
 		}
 	}
 	
+	public rkmdBackEnd(String fNameInputMZ, String fNameInputSpecies) throws Exception{
+		//for testing/running with GUI - no fNameInputMObs required!!
+		//filename integrity check:
+		
+		int fileMarker = 0;
+		
+		try{
+			this.fInputMZRef = new File(fNameInputMZ); fileMarker++;
+			this.fInputRefSpecies = new File(fNameInputSpecies); fileMarker++;
+		}catch(Exception e){
+			System.out.println("VERBOSE: IO Error at fileMarker= " + fileMarker);
+			checkFailure = true;
+		}
+		
+		if(!this.fInputMZRef.isFile() || !this.fInputMZRef.exists()){
+			System.out.println("-- VERBOSE: Input Atomic Masses File Does Not Exist or is Not a File");
+			checkFailure = true;
+		}
+		
+		if(!this.fInputRefSpecies.isFile() || !this.fInputRefSpecies.exists()){
+			System.out.println("-- VERBOSE: Input Reference KMD File Does Not Exist or is Not a File");
+			checkFailure = true;
+		}
+		
+		if(checkFailure){
+			throw new Exception("File Check Failure");
+		}
+	}
+	
 	
 	// REQUIRES: file formatted correctly
 	private ArrayList<String> fileContents(File auxInputFile) throws Exception{
@@ -90,15 +119,15 @@ public class rkmdBackEnd{
 		
 		return -1;
 	}
+		
 	
-	
-	public void loadFileInput() throws Exception{
+	public void loadFileInput(ArrayList<Double> auxMObs) throws Exception{
 		String headerLine[];
 		String tempHold[];
 		
 		//(1) load reference m/z
 		
-		// a) check input table should have 3 columns (UNIQUE SYMBOLS, masss):
+		// a) check input table should have 3 columns (UNIQUE SYMBOLS, mass):
 		ArrayList<String> inputMZRefHold = this.fileContents(this.fInputMZRef);
 		if(inputMZRefHold.size() <= 0){ //MZ file is empty or contains no data
 			throw new Exception("No Input Data for Reference Atomic Masses File");
@@ -178,37 +207,42 @@ public class rkmdBackEnd{
 		
 		//load input raw experimental data (lines/string segments with # should be ignored) - no headers required
 		//--> commented segments start with #
-		ArrayList<String> inputMObsHold = this.fileContents(this.fInputMObs);
-		if(inputMObsHold.size() <= 0){
-			throw new Exception("File Error: Input Experimental Data File is Empty");
-		}
 		
-		ArrayList<Double> inputMObsList = new ArrayList<Double>();
-		
-		System.out.print("Loading Input Experimental Data File ...");
-		
-		for(int i = 0; i < inputMObsHold.size(); i++){
-			int crunchIndex = ((String)inputMObsHold.get(i)).indexOf("#");
-			if(crunchIndex < 0){ //line uncommented
-				try{
-					inputMObsList.add(Double.parseDouble((String)inputMObsHold.get(i)));
-				}catch(Exception e){
-					System.out.println("Error Loading Input Experimental Data. Check to make sure that uncommented sections contain floating point numbers only.");
-					e.printStackTrace();
+		if(auxMObs == null){
+			ArrayList<String> inputMObsHold = this.fileContents(this.fInputMObs);
+			if(inputMObsHold.size() <= 0){
+				throw new Exception("File Error: Input Experimental Data File is Empty");
+			}
+			
+			ArrayList<Double> inputMObsList = new ArrayList<Double>();
+			
+			System.out.print("Loading Input Experimental Data File ...");
+			
+			for(int i = 0; i < inputMObsHold.size(); i++){
+				int crunchIndex = ((String)inputMObsHold.get(i)).indexOf("#");
+				if(crunchIndex < 0){ //line uncommented
+					try{
+						inputMObsList.add(Double.parseDouble((String)inputMObsHold.get(i)));
+					}catch(Exception e){
+						System.out.println("Error Loading Input Experimental Data. Check to make sure that uncommented sections contain floating point numbers only.");
+						e.printStackTrace();
+					}
+				}
+				
+				if(crunchIndex > 0){ //line commented mid-position
+					try{
+						inputMObsList.add(Double.parseDouble((((String)inputMObsHold.get(i)).substring(0, crunchIndex)).trim()));
+					}catch(Exception e){
+						System.out.println("Error Loading Input Experimental Data. Check to make sure that uncommented sections contain floating point numbers only.");
+						e.printStackTrace();
+					}
 				}
 			}
 			
-			if(crunchIndex > 0){ //line commented mid-position
-				try{
-					inputMObsList.add(Double.parseDouble((((String)inputMObsHold.get(i)).substring(0, crunchIndex)).trim()));
-				}catch(Exception e){
-					System.out.println("Error Loading Input Experimental Data. Check to make sure that uncommented sections contain floating point numbers only.");
-					e.printStackTrace();
-				}
-			}
+			this.inputMObs = inputMObsList;
+		}else{
+			this.inputMObs = auxMObs;
 		}
-		
-		this.inputMObs = inputMObsList;
 		
 		if(inputMObs.size() <= 0){
 			throw new Exception("File Error: Input Experimental Data File is Empty");
@@ -262,7 +296,7 @@ public class rkmdBackEnd{
 			
 			//System.out.println("Symbol: " + symbol + " Numerical = " + numerical + "StrIndex = " + strIndex);
 			//compute masses, if applicable
-			if(!symbol.equalsIgnoreCase(""));{
+			if(!symbol.equalsIgnoreCase("")){ //changed
 				if(!numerical.equalsIgnoreCase("")){
 					runningTotal += Integer.parseInt(numerical)*this.getAtomicMass(symbol);
 				}else{
@@ -381,6 +415,24 @@ public class rkmdBackEnd{
 		pW.close();
 	}
 	
+	public String printMatchResults(){
+		String output = "---MATCH RESULTS---";
+		output += "\n m/z, Result, Lipid-ID \n";
+		
+		for(int i = 0; i < this.matchResults.length; i++){
+			String[] lineHold = matchResults[i].split("\n");
+			for(int j = 0; j < lineHold.length; j++){
+				if(!(lineHold[j].indexOf("HIT") < 0) && !(lineHold[j].indexOf("NTC_HIT") < 0)){
+					output += lineHold[j].split("\t")[0] + "," + lineHold[j].split("\t")[1] + "," + lineHold[j].split("\t")[8] + "\n";
+				} 
+			}
+		}
+		
+		output += "----END----";
+		
+		return output;
+	}
+	
 	
 	public static void main(String[] args) throws Exception{ //testing only!
 		System.out.println("hello world 2");
@@ -405,12 +457,14 @@ public class rkmdBackEnd{
 		final String path = "/home/ankit/Dropbox/RKMDProject_2013/SVN_checkout/tests/";
 		
 		rkimp.rkmdBackEnd test = new rkimp.rkmdBackEnd(path+"masses.txt", path+"periodicMasses.csv", path+"ReferenceKMD.csv");
-		test.loadFileInput();
+		test.loadFileInput(null);
 		System.out.println(test.exactMass("Mn"));
 		test.calculate(0.27, 0.01);
 		
 		test.writeToFile("Results.txt", 1);
 		test.writeToFile("Results2.txt", 2);
+		
+		System.out.println(test.printMatchResults());
 		
 		
 		//String test2 = "\t      quick brown \t fox       jumps over,lazy dog,!";
