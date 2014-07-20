@@ -17,6 +17,7 @@ public class rkmdBackEnd{
 	
 	//input arrays + output array
 	private ArrayList<Double> inputMObs;
+	private ArrayList<String> inputMObsHold; 
 	private Pair[] inputMZRef; //if CLI/file input is used, initially load results into ArrayList. 
 	private Compound[] inputRefSpecies;
 	private String[] matchResults; //should match number of lines in input/length of inputMObs
@@ -32,6 +33,7 @@ public class rkmdBackEnd{
 	// statistical tolerances for metrics
 	public double rkmdTolerance;
 	public double NTCTolerance;
+	private int filterSelect = 0;
 	
 	public rkmdBackEnd(String fNameInputMObs, String fNameInputMZ, String fNameInputSpecies) throws Exception{
 		//for testing/running headless
@@ -209,7 +211,7 @@ public class rkmdBackEnd{
 		//--> commented segments start with #
 		
 		if(auxMObs == null){
-			ArrayList<String> inputMObsHold = this.fileContents(this.fInputMObs);
+			this.inputMObsHold = this.fileContents(this.fInputMObs); //should contain
 			if(inputMObsHold.size() <= 0){
 				throw new Exception("File Error: Input Experimental Data File is Empty");
 			}
@@ -218,23 +220,16 @@ public class rkmdBackEnd{
 			
 			System.out.print("Loading Input Experimental Data File ...");
 			
-			for(int i = 0; i < inputMObsHold.size(); i++){
+			//first line: header file to contain all columns. we are working with CSV files here.
+			for(int i = 1; i < inputMObsHold.size(); i++){
 				int crunchIndex = ((String)inputMObsHold.get(i)).indexOf("#");
 				if(crunchIndex < 0){ //line uncommented
 					try{
-						inputMObsList.add(Double.parseDouble((String)inputMObsHold.get(i)));
+						String auxHold[] = ((String)inputMObsHold.get(i)).split("\t");
+						inputMObsList.add(Double.parseDouble(auxHold[0]));
 					}catch(Exception e){
 						System.out.println("Error Loading Input Experimental Data. Check to make sure that uncommented sections contain floating point numbers only.");
-						e.printStackTrace();
-					}
-				}
-				
-				if(crunchIndex > 0){ //line commented mid-position
-					try{
-						inputMObsList.add(Double.parseDouble((((String)inputMObsHold.get(i)).substring(0, crunchIndex)).trim()));
-					}catch(Exception e){
-						System.out.println("Error Loading Input Experimental Data. Check to make sure that uncommented sections contain floating point numbers only.");
-						e.printStackTrace();
+						//e.printStackTrace();
 					}
 				}
 			}
@@ -310,6 +305,11 @@ public class rkmdBackEnd{
 		return runningTotal;
 	}
 	
+	public void setFilter(int filterType){
+		this.filterSelect = filterType;
+		//0 = NONE. 1 = positive mode, 2 = negative mode
+	}
+	
 	private double getAtomicMass(String keySearch) throws Exception{
 		int i = 0;
 		while(i < this.inputMZRef.length){
@@ -347,15 +347,16 @@ public class rkmdBackEnd{
 		final double c2 = 0.013399;
 		this.rkmdTolerance = rkmdTol;
 		this.NTCTolerance = NTCTol;
-		this.matchResults = new String[this.inputMObs.size()];
+		this.matchResults = new String[this.inputMObs.size()+1];
+		matchResults[this.inputMObs.size()] = (String)inputMObsHold.get(0);
 		
 		for(int i = 0; i < inputMObs.size(); i++){
 			matchResults[i] = "";
 			for(int j = 0; j < inputRefSpecies.length; j++){
 				double rKMD = (1.0/c2)*((c1*(double)inputMObs.get(i))%1 - inputRefSpecies[j].getRefKMD()); //metric 1 (S1 - see implementation note, eq. 5)
 				//System.out.println(inputRefSpecies[j].getName() + "\t\t" + rKMD); //test verbose
-				if((Math.abs(Math.round(rKMD) - rKMD)) <= this.rkmdTolerance){
-					matchResults[i] += (double)inputMObs.get(i) + "\tHIT:\t" + inputRefSpecies[j].getName() + "\t" + rKMD + "\t" + (Math.abs(Math.round(rKMD) - rKMD));
+				if(((Math.abs(Math.round(rKMD) - rKMD)) <= this.rkmdTolerance) && rKMD <= 0){
+					matchResults[i] += ((String)inputMObsHold.get(i+1)) + "\tHIT:\t" + inputRefSpecies[j].getName() + "\t" + rKMD + "\t" + (Math.abs(Math.round(rKMD) - rKMD));
 					
 					//only perform NTC calculations for admissable RKMDs:
 					String adductExtract = (this.inputRefSpecies[j].getName()).split(";")[2];
@@ -368,15 +369,15 @@ public class rkmdBackEnd{
 					double denomHold = (exactMass("C") + 2*exactMass("H"));
 						//if((double)inputMObs.get(i) == 678.507838079542) System.out.println(adductExtract + inputRefSpecies[j].getmObs() + "\t" + numHold/denomHold);
 					double nTC = inputRefSpecies[j].getNC()*(numHold/denomHold);
-					
+
 					if((Math.abs(Math.round(nTC) - nTC) <= this.NTCTolerance) && inputRefSpecies[j].inRange(nTC)){
-						matchResults[i] += "\tNTC_HIT\t" + Math.round(nTC) + "\t" + (Math.abs(Math.round(nTC) - nTC)) + "\t" + inputRefSpecies[j].getName().split(";")[1] + " [" + Math.round(nTC) + ":" + inputRefSpecies[j].getNC() + "]" + inputRefSpecies[j].getName().split(";")[2] + "\n";
+						matchResults[i] += "\tNTC_HIT\t" + Math.round(nTC) + "\t" + (Math.abs(Math.round(nTC) - nTC)) + "\t" + inputRefSpecies[j].getName().split(";")[1] + " [" + Math.round(nTC) + ":" + Math.abs(Math.round(rKMD)) + "]" + inputRefSpecies[j].getName().split(";")[2] + "\n";
 					}else{
 						matchResults[i] += "\tNTC_MISS\t" + Math.round(nTC) + "\t" + (Math.abs(Math.round(nTC) - nTC)) + "\n";
 					}
 					
 				}else{
-					matchResults[i] += (double)inputMObs.get(i) + "\tMISS:\t" + inputRefSpecies[j].getName() + "\t" + rKMD + "\t" + (Math.abs(Math.round(rKMD) - rKMD)) + "\n";
+					matchResults[i] += ((String)inputMObsHold.get(i+1)) + "\tMISS:\t" + inputRefSpecies[j].getName() + "\t" + rKMD + "\t" + (Math.abs(Math.round(rKMD) - rKMD)) + "\n";
 				}
 			}
 			
@@ -393,19 +394,36 @@ public class rkmdBackEnd{
 		File output = new File(fOutput);
 		PrintWriter pW = new PrintWriter(new FileWriter(fOutput, false));
 		
-		String header = "m/z \t MATCH_RESULT \t Compound_Name \t RKMD \t RKMD_Tolerance \t NTC_RESULT \t Total_Carbons \t Carbon_Tolerance \t Matched Lipid-ID";
-		
+		String header = (matchResults[matchResults.length - 1]) + "\t MATCH_RESULT \t Compound_Name \t Family \t Adduct  \t RKMD \t RKMD_Tolerance \t NTC_RESULT \t Total_Carbons \t Carbon_Tolerance \t Matched Lipid-ID";
+		System.out.println("Filter Select = " + this.filterSelect);
 		pW.println(header);
-		
-		for(int i = 0; i < this.matchResults.length; i++){
+		for(int i = 0; i < (this.matchResults.length-1); i++){
 			if(option == 1){ //display HITS and MISSES
 				pW.println(matchResults[i]);
 			}
 			
-			if(option == 2){ //display ONLY HITS
+			if(option == 2 && this.filterSelect == 0){ //display ONLY HITS
 				String[] lineHold = matchResults[i].split("\n");
 				for(int j = 0; j < lineHold.length; j++){
 					if(!(lineHold[j].indexOf("HIT") < 0)){
+						pW.println(lineHold[j]);
+					} 
+				}
+			}
+			
+			if(option == 2 && this.filterSelect == 1){ //POSITIVE MODE ONLY
+				String[] lineHold = matchResults[i].split("\n");
+				for(int j = 0; j < lineHold.length; j++){
+					if(!(lineHold[j].indexOf("]+") < 0) && !(lineHold[j].indexOf("HIT") < 0)){
+						pW.println(lineHold[j]);
+					} 
+				}
+			}
+			
+			if(option == 2 && this.filterSelect == 2){ //NEGATIVE MODE ONLY
+				String[] lineHold = matchResults[i].split("\n");
+				for(int j = 0; j < lineHold.length; j++){
+					if(!(lineHold[j].indexOf("]-") < 0) && !(lineHold[j].indexOf("HIT") < 0)){
 						pW.println(lineHold[j]);
 					} 
 				}
@@ -416,8 +434,8 @@ public class rkmdBackEnd{
 	}
 	
 	public String printMatchResults(){
-		String output = "---MATCH RESULTS---";
-		output += "\n m/z, Result, Lipid-ID \n";
+		String output = "---MATCH RESULTS---\n";
+		output += "\nm/z, Result, Lipid-ID \n";
 		
 		for(int i = 0; i < this.matchResults.length; i++){
 			String[] lineHold = matchResults[i].split("\n");
@@ -456,13 +474,18 @@ public class rkmdBackEnd{
 		
 		final String path = "/home/ankit/Dropbox/RKMDProject_2013/SVN_checkout/tests/";
 		
-		rkimp.rkmdBackEnd test = new rkimp.rkmdBackEnd(path+"masses.txt", path+"periodicMasses.csv", path+"ReferenceKMD.csv");
+		rkimp.rkmdBackEnd test = new rkimp.rkmdBackEnd(path+"masses3.csv", path+"periodicMasses.csv", path+"ReferenceKMD.csv");
 		test.loadFileInput(null);
 		System.out.println(test.exactMass("Mn"));
 		test.calculate(0.27, 0.01);
 		
-		test.writeToFile("Results.txt", 1);
-		test.writeToFile("Results2.txt", 2);
+		
+		test.writeToFile("Results9.txt", 1);
+		test.writeToFile("Results_ALLHITS.txt", 2);
+		test.setFilter(1);
+		test.writeToFile("Results_POSITIVE.txt", 2);
+		test.setFilter(2);
+		test.writeToFile("Results_NEGATIVE.txt", 2);
 		
 		System.out.println(test.printMatchResults());
 		

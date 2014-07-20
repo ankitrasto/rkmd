@@ -27,6 +27,8 @@ import javax.swing.Action;
 import java.io.*;
 import java.util.*;
 import java.text.*;
+import javax.swing.JComboBox;
+import javax.swing.DefaultComboBoxModel;
 
 public class main {
 
@@ -40,6 +42,7 @@ public class main {
 	private final Action action_1 = new SwingAction_1();
 	private rkmdBackEnd engine;
 	private JButton btnExport;
+	private JComboBox<String> cbxFilter; 
 	ArrayList<Double> mObsInput = new ArrayList<Double>();
 	File fName;
 
@@ -129,7 +132,7 @@ public class main {
 	
 	public void readMZInputFromFile(){
 		//file select dialog; this will be checked in rkmdBackEnd
-		javax.swing.filechooser.FileNameExtensionFilter filter = new javax.swing.filechooser.FileNameExtensionFilter("TXT Files", "txt");		
+		javax.swing.filechooser.FileNameExtensionFilter filter = new javax.swing.filechooser.FileNameExtensionFilter("CSV Files", "csv");		
 		JFileChooser fcInput = new JFileChooser();
 		fcInput.setFileFilter(filter);
 		if(fcInput.showOpenDialog(frmRelativeKendrickMass) == JFileChooser.APPROVE_OPTION){
@@ -219,9 +222,16 @@ public class main {
 					Date dNow = new Date();
 					SimpleDateFormat ft = new SimpleDateFormat("yyyyMMdd_hhmmss");
 					System.out.println(ft.format(dNow));
-					engine.writeToFile("Results" + ft.format(dNow) + ".txt", 2);
+					engine.setFilter(cbxFilter.getSelectedIndex());
+					if(cbxFilter.getSelectedIndex() == 1){
+						engine.writeToFile("Results_Positive_" + ft.format(dNow) + ".txt", 2);
+					}else if(cbxFilter.getSelectedIndex() == 2){
+						engine.writeToFile("Results_Negative_" + ft.format(dNow) + ".txt", 2);
+					}else{
+						engine.writeToFile("Results" + ft.format(dNow) + ".txt", 2);
+					}
+					
 					JOptionPane.showMessageDialog(frmRelativeKendrickMass, "Output File Written to:" + System.getProperty("user.dir"));
-					btnExport.setEnabled(false);
 				}catch(Exception x){
 					JOptionPane.showMessageDialog(frmRelativeKendrickMass, "I/O File Error", "Error", JOptionPane.ERROR_MESSAGE);
 					x.printStackTrace();
@@ -298,6 +308,20 @@ public class main {
 		});
 		btnCalculate.setBounds(387, 385, 153, 25);
 		frmRelativeKendrickMass.getContentPane().add(btnCalculate);
+		
+		JLabel lblAdductFiler = new JLabel("Adduct Filter:");
+		lblAdductFiler.setBounds(349, 123, 121, 15);
+		frmRelativeKendrickMass.getContentPane().add(lblAdductFiler);
+		
+		cbxFilter = new JComboBox<String>();
+		cbxFilter.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				//System.out.println("SelectIndex = " + cbxFilter.getSelectedIndex());
+			}
+		});
+		cbxFilter.setModel(new DefaultComboBoxModel<String>(new String[] {"None", "Positive Mode", "Negative Mode"}));
+		cbxFilter.setBounds(464, 118, 153, 24);
+		frmRelativeKendrickMass.getContentPane().add(cbxFilter);
 		
 	}
 	
