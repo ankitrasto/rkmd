@@ -173,8 +173,8 @@ public class rkmdBackEnd{
 		headerLine = this.delimitLine((String)inputRefSpeciesHold.get(0)).split("\t"); 
 		
 		if(this.colIndex("Class", headerLine) < 0 || this.colIndex("Subclass", headerLine) < 0 || this.colIndex("Adduct", headerLine) < 0 || this.colIndex("KMD", headerLine) < 0 || this.colIndex("Number_of_Chains", headerLine) < 0 
-		|| this.colIndex("Headgroup_Mass", headerLine) < 0 || this.colIndex("MinC", headerLine) < 0 || this.colIndex("MaxC", headerLine) < 0){
-			throw new Exception("Input Reference KMD Data Incorrectly Formatted: Check to ensure that data contains 3 properly named headers");
+		|| this.colIndex("Headgroup_Mass", headerLine) < 0 || this.colIndex("MinC", headerLine) < 0 || this.colIndex("MaxC", headerLine) < 0 || this.colIndex("MaxDB", headerLine) < 0){
+			throw new Exception("Input Reference KMD Data Incorrectly Formatted: Check to ensure that data contains properly named headers");
 		}
 		
 		inputRefSpecies = new Compound[inputRefSpeciesHold.size()-1];
@@ -190,7 +190,9 @@ public class rkmdBackEnd{
 				int minCTemp = Integer.parseInt(tempHold[this.colIndex("minC", headerLine)]);
 				int maxCTemp = Integer.parseInt(tempHold[this.colIndex("maxC", headerLine)]);
 				double hmTemp = Double.parseDouble(tempHold[this.colIndex("Headgroup_Mass", headerLine)]);
-				inputRefSpecies[i-1] = new Compound(fullNameTemp, NChainsTemp, hmTemp, RefKMDTemp, minCTemp, maxCTemp);
+				int maxDBTemp = Integer.parseInt(tempHold[this.colIndex("MaxDB", headerLine)]);
+				inputRefSpecies[i-1] = new Compound(fullNameTemp, NChainsTemp, hmTemp, RefKMDTemp, minCTemp, maxCTemp, maxDBTemp);
+				//System.out.println(inputRefSpecies[i-1].getInfo()); //VERBOSE
 			}catch(Exception e){
 				System.out.println("Error Loading input Library KMD File. Check to make sure it is properly formatted.");
 				e.printStackTrace();
@@ -355,8 +357,8 @@ public class rkmdBackEnd{
 			for(int j = 0; j < inputRefSpecies.length; j++){
 				double rKMD = (1.0/c2)*((c1*(double)inputMObs.get(i))%1 - inputRefSpecies[j].getRefKMD()); //metric 1 (S1 - see implementation note, eq. 5)
 				//System.out.println(inputRefSpecies[j].getName() + "\t\t" + rKMD); //test verbose
-				if(((Math.abs(Math.round(rKMD) - rKMD)) <= this.rkmdTolerance) && rKMD <= 0){
-					matchResults[i] += ((String)inputMObsHold.get(i+1)) + "\tHIT:\t" + inputRefSpecies[j].getName() + "\t" + rKMD + "\t" + (Math.abs(Math.round(rKMD) - rKMD));
+				if(((Math.abs(Math.abs(Math.round(rKMD))- Math.abs(rKMD))) <= this.rkmdTolerance) && rKMD <= 0.5 && Math.abs(rKMD) <= inputRefSpecies[j].getMaxDB()){
+					matchResults[i] += ((String)inputMObsHold.get(i+1)) + "\tHIT:\t" + inputRefSpecies[j].getName() + "\t" + rKMD + "\t" + (Math.abs(Math.abs(Math.round(rKMD)) - Math.abs(rKMD)));
 					
 					//only perform NTC calculations for admissable RKMDs:
 					String adductExtract = (this.inputRefSpecies[j].getName()).split(";")[2];
@@ -477,10 +479,10 @@ public class rkmdBackEnd{
 		rkimp.rkmdBackEnd test = new rkimp.rkmdBackEnd(path+"masses3.csv", path+"periodicMasses.csv", path+"ReferenceKMD.csv");
 		test.loadFileInput(null);
 		System.out.println(test.exactMass("Mn"));
-		test.calculate(0.27, 0.01);
+		test.calculate(0.5, 0.10);
 		
 		
-		test.writeToFile("Results9.txt", 1);
+		test.writeToFile("Results_DEBUG.txt", 1);
 		test.writeToFile("Results_ALLHITS.txt", 2);
 		test.setFilter(1);
 		test.writeToFile("Results_POSITIVE.txt", 2);
