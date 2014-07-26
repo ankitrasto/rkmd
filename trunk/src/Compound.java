@@ -42,6 +42,11 @@ literature/calculated from headgroups; user-defined.
 	*/
 	private int maxC = -1;
 	
+	/**
+	 * Maximum number of allowable DOUBLE-BONDS in the compound
+	 */
+	private int maxDB = -1;
+	
 	
 	/**
 	* Generates a "Compound" object for matching and calculation algorithms 
@@ -57,13 +62,14 @@ Example: name="class;subclass;adduct"
 	* @param auxMaxC Maximum number of allowable carbon-atoms in the compound
 	*/
 	public Compound(String auxName, int auxNChains, double auxMObs, double 
-auxRefKMD, int auxMinC, int auxMaxC){
+auxRefKMD, int auxMinC, int auxMaxC, int auxMaxDB){
 		this.name = auxName;
 		this.nChains = auxNChains;
 		this.mObs = auxMObs;
 		this.refKMD = auxRefKMD;
 		this.minC = auxMinC;
 		this.maxC = auxMaxC;
+		this.maxDB = auxMaxDB;
 	}
 	
 	//accessors:
@@ -98,6 +104,10 @@ auxRefKMD, int auxMinC, int auxMaxC){
 		return this.nChains;
 	}
 	
+	public double getMaxDB(){
+		return this.maxDB;
+	}
+	
 	/**
 	  Determines if a given value (auxCNo) falls between the minimum and maximum number of carbon atoms for this compound.
 	  <p> 
@@ -124,6 +134,7 @@ auxRefKMD, int auxMinC, int auxMaxC){
 		String temp = this.name + " KMD = " + this.refKMD + " , NC=" + 
 this.nChains + " , HM=" + this.mObs;
 		temp += ", xE[" + this.minC + "," + this.maxC + "]";
+		temp += ", MAXDB = " + this.maxDB;
 		return temp;
 	}
 
