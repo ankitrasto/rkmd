@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section name="Workbench">
+	<section name="org.eclipse.ui.internal.QuickAccess">
+		<item value="894" key="dialogWidth"/>
+		<item value="556" key="dialogHeight"/>
+		<list key="orderedProviders">
+			<item value="org.eclipse.ui.preferences"/>
+		</list>
+		<list key="textArray">
+			<item value="windowbuil"/>
+		</list>
+		<list key="orderedElements">
+			<item value="org.eclipse.wb.core.preferences.MainPreferencePage"/>
+		</list>
+		<list key="textEntries">
+			<item value="1"/>
+		</list>
+	</section>
+	<section name="WorkbenchPreferenceDialogSettings">
+		<item value="71" key="DIALOG_Y_ORIGIN"/>
+		<item value="348" key="DIALOG_X_ORIGIN"/>
+	</section>
+	<section name="ShowViewDialog">
+		<item value="328" key="DIALOG_WIDTH"/>
+		<item value="org.eclipse.wb.core.StructureView" key="ShowViewDialog.STORE_SELECTED_VIEW_ID"/>
+		<item value="165" key="DIALOG_Y_ORIGIN"/>
+		<item value="415" key="DIALOG_HEIGHT"/>
+		<item value="559" key="DIALOG_X_ORIGIN"/>
+		<item value="1|Sans Serif|9.0|0|GTK|1|" key="DIALOG_FONT_NAME"/>
+		<list key="ShowViewDialog.STORE_EXPANDED_CATEGORIES_ID">
+			<item value="org.eclipse.wb.core.category"/>
+		</list>
+	</section>
+	<section name="ImportExportAction">
+	</section>
+</section>

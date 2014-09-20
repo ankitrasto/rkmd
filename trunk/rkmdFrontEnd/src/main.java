@@ -101,28 +101,51 @@ public class main {
 		
 		//test MZ input/perform a conversion
 		if(!this.fileInputSelected){
+			this.mObsInput =  new ArrayList<Double>();
 			if(this.txtMZInput.getText().length() <= 0){
 				msg += "-- MZ Input Values are not Defined";
 			}else{ //for efficiency, perform the conversion here.
 				String[] dataHold = this.txtMZInput.getText().split("\n");
 				boolean formatOK = true;
-				for(int i = 0; i < dataHold.length; i++){
+				for(int i = 1; i < dataHold.length; i++){ //first line is the header
 					try{
-						this.mObsInput.add(Double.parseDouble(dataHold[i]));
-					}catch(Exception e){formatOK = false;}
+						String auxHold = delimitLine(dataHold[i]);
+						this.mObsInput.add(Double.parseDouble(auxHold.split("\t")[0]));
+						//System.out.println("Mass Added = " + this.mObsInput.get(i-1));
+					}catch(Exception e){
+						e.printStackTrace();
+						formatOK = false;
+					}
 				}
 				if(!formatOK){
-					msg += "-- MZ Input Values are not correctly formatted. \n Floating point m/z values must be defined once per line with no trailing or line spaces.";
+					msg += "-- M/Z values not correctly defined";
 				}
 				
 				//testing only:
-				for(int i = 0; i < mObsInput.size(); i++){
-					System.out.println((Double)mObsInput.get(i));
-				}
+				//for(int i = 0; i < mObsInput.size(); i++){
+					//System.out.println("Index=" + i + " Val=" + (Double)mObsInput.get(i));
+				//}
 			}
 		}
 		
 		return msg;
+	}
+	
+	private String delimitLine(String auxInput){
+		int i = 0;
+		String input = auxInput.trim();
+		String spaceSep = "";
+		while(i < input.length()){
+			if((int)input.charAt(i) != 9 && (int)input.charAt(i) != 32 && (int)input.charAt(i) != 44){
+				if(i > 0 && ((int)input.charAt(i-1) == 9 || (int)input.charAt(i-1) == 32 || (int)input.charAt(i-1) == 44)){			
+					spaceSep += "\t" + input.charAt(i);
+				}else{
+					spaceSep += input.charAt(i);
+				}
+			}
+			i++;
+		}
+		return spaceSep;
 	}
 	
 	public String readMZInput(){
@@ -149,9 +172,10 @@ public class main {
 	public void calculate() throws Exception{
 		//checkInput MUST be run before this!
 		//may need to do in background.		
-		if(!this.fileInputSelected){
+		if(!this.fileInputSelected){ //use text input instead
 			engine = new rkmdBackEnd("periodicMasses.csv", "ReferenceKMD.csv");
 			engine.loadFileInput(this.mObsInput);
+			engine.inputMObsHold = engine.textContents(this.txtMZInput.getText());
 			engine.calculate(Double.parseDouble(this.txtRKMDTol.getText()), Double.parseDouble(this.txtNTCTol.getText()));
 			this.txtOutput.setText(engine.printMatchResults());
 			this.btnExport.setEnabled(true);
@@ -163,7 +187,6 @@ public class main {
 			this.btnExport.setEnabled(true);
 		}
 	}
-	
 	/**
 	 * Initialize the contents of the frame.
 	 */
@@ -356,5 +379,6 @@ public class main {
 		public void actionPerformed(ActionEvent e) {
 			readMZInputFromFile();
 		}
+		
 	}
 }
