@@ -39,4 +39,10 @@
 	public double getValue(){
 		return this.value;
 	}
+	
+	
+	public static void main(String []args){
+		System.out.println("Test");
+		
+	}
  }
