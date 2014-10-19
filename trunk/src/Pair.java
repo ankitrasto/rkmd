@@ -2,6 +2,7 @@
  * A Basic pair data structure containing a name and floating point value.
  * Intended for storing atomic mass data; i.e. periodic table data (symbol, exact mass)
  * Ankit Rastogi, 25-Jan-2014
+ * License: GPLv3
  */
 
  package rkimp;
