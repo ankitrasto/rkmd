@@ -29,6 +29,8 @@ import java.util.*;
 import java.text.*;
 import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
+import java.awt.Color;
+import javax.swing.UIManager;
 
 public class main {
 
@@ -192,8 +194,9 @@ public class main {
 	 */
 	private void initialize() {
 		frmRelativeKendrickMass = new JFrame();
+		frmRelativeKendrickMass.getContentPane().setBackground(Color.BLACK);
 		frmRelativeKendrickMass.setTitle("Relative Kendrick Mass Defect Calculation Tool");
-		frmRelativeKendrickMass.setBounds(100, 100, 727, 470);
+		frmRelativeKendrickMass.setBounds(100, 100, 747, 484);
 		frmRelativeKendrickMass.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frmRelativeKendrickMass.getContentPane().setLayout(null);
 		
@@ -213,10 +216,12 @@ public class main {
 		frmRelativeKendrickMass.getContentPane().add(txtNTCTol);
 		
 		JLabel lblNtcTolerance = new JLabel("RKMD Tolerance:");
+		lblNtcTolerance.setForeground(Color.WHITE);
 		lblNtcTolerance.setBounds(329, 63, 121, 15);
 		frmRelativeKendrickMass.getContentPane().add(lblNtcTolerance);
 		
 		JLabel label = new JLabel("NTC Tolerance:");
+		label.setForeground(Color.WHITE);
 		label.setBounds(339, 95, 121, 15);
 		frmRelativeKendrickMass.getContentPane().add(label);
 		
@@ -226,6 +231,8 @@ public class main {
 		frmRelativeKendrickMass.getContentPane().add(scxMZInput);
 		
 		txtMZInput = new JTextArea();
+		txtMZInput.setForeground(UIManager.getColor("CheckBox.background"));
+		txtMZInput.setBackground(UIManager.getColor("Button.foreground"));
 		txtMZInput.setLineWrap(true);
 		scxMZInput.setViewportView(txtMZInput);
 		
@@ -265,10 +272,12 @@ public class main {
 		frmRelativeKendrickMass.getContentPane().add(btnExport);
 		
 		JLabel lblMzInput = new JLabel("M/Z Input:");
+		lblMzInput.setForeground(Color.WHITE);
 		lblMzInput.setBounds(22, 192, 144, 15);
 		frmRelativeKendrickMass.getContentPane().add(lblMzInput);
 		
 		JLabel lblOutput = new JLabel("Output:");
+		lblOutput.setForeground(Color.WHITE);
 		lblOutput.setBounds(387, 192, 144, 15);
 		frmRelativeKendrickMass.getContentPane().add(lblOutput);
 		
@@ -333,6 +342,7 @@ public class main {
 		frmRelativeKendrickMass.getContentPane().add(btnCalculate);
 		
 		JLabel lblAdductFiler = new JLabel("Adduct Filter:");
+		lblAdductFiler.setForeground(Color.WHITE);
 		lblAdductFiler.setBounds(349, 123, 121, 15);
 		frmRelativeKendrickMass.getContentPane().add(lblAdductFiler);
 		

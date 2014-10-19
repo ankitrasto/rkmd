@@ -448,19 +448,45 @@ public class rkmdBackEnd{
 	
 	public String printMatchResults(){
 		String output = "---MATCH RESULTS---\n";
-		output += "\nm/z, Result, Lipid-ID \n";
+		if(filterSelect == 1){
+			output += "ION MODE: POSITIVE MODE\n";
+		}else if (filterSelect == 2){
+			output += "ION MODE: NEGATIVE MODE\n";
+		}else{
+			output += "ION MODE: NO FILTER\n";
+		}
+		output += "\nm/z, Match-Lipid-ID \n";
 		
+		
+		int resultCount = 0;
 		for(int i = 0; i < this.matchResults.length; i++){
 			String[] lineHold = matchResults[i].split("\n");
 			for(int j = 0; j < lineHold.length; j++){
 				if(!(lineHold[j].indexOf("HIT") < 0) && !(lineHold[j].indexOf("NTC_HIT") < 0)){
-					output += lineHold[j].split("\t")[0] + "," + lineHold[j].split("\t")[1] + "," + lineHold[j].split("\t")[8] + "\n";
+					//apply filtering here
+					if(filterSelect == 1 && !(lineHold[j].indexOf("]+") < 0) && !(lineHold[j].indexOf("HIT") < 0)){
+						output += lineHold[j].split("\t")[0] + ", " + lineHold[j].split("\t")[lineHold[j].split("\t").length - 1] + "\n";
+						resultCount++;
+					}
+					
+					if(filterSelect == 2 && !(lineHold[j].indexOf("]-") < 0) && !(lineHold[j].indexOf("HIT") < 0)){
+						output += lineHold[j].split("\t")[0] + ", " + lineHold[j].split("\t")[lineHold[j].split("\t").length - 1] + "\n";
+						resultCount++;
+					}
+					
+					if(filterSelect == 0){
+						output += lineHold[j].split("\t")[0] + ", " + lineHold[j].split("\t")[lineHold[j].split("\t").length - 1] + "\n";
+						resultCount++;
+					}
+
 				} 
 			}
 		}
 		
-		output += "----END----";
-		
+		output += "\n ---> Number of Matches = " + resultCount + "\n";
+		output += "\n ---> Experimental Masses Entered = " + inputMObs.size() +"\n";
+		output += "------------END-------------";
+		resultCount = 0;
 		return output;
 	}
 	
