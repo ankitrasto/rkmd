@@ -47,6 +47,11 @@ literature/calculated from headgroups; user-defined.
 	 */
 	private int maxDB = -1;
 	
+	/**
+	 * Type of fatty acid: (0 = carbonyl, 1 = aliphatic, ...other species can be added)
+	 * 
+	*/
+	private int FAtype = -1; 
 	
 	/**
 	* Generates a "Compound" object for matching and calculation algorithms 
@@ -62,7 +67,7 @@ Example: name="class;subclass;adduct"
 	* @param auxMaxC Maximum number of allowable carbon-atoms in the compound
 	*/
 	public Compound(String auxName, int auxNChains, double auxMObs, double 
-auxRefKMD, int auxMinC, int auxMaxC, int auxMaxDB){
+auxRefKMD, int auxMinC, int auxMaxC, int auxMaxDB, int auxFAtype){
 		this.name = auxName;
 		this.nChains = auxNChains;
 		this.mObs = auxMObs;
@@ -70,6 +75,7 @@ auxRefKMD, int auxMinC, int auxMaxC, int auxMaxDB){
 		this.minC = auxMinC;
 		this.maxC = auxMaxC;
 		this.maxDB = auxMaxDB;
+		this.FAtype = auxFAtype;
 	}
 	
 	//accessors:
@@ -124,6 +130,13 @@ auxRefKMD, int auxMinC, int auxMaxC, int auxMaxDB){
 	*/
 	public String getName(){
 		return this.name;
+	}
+	
+	/**
+	 * Accessor for the fatty-acid type of this compound
+	 */
+	public int getFAtype(){
+		return this.FAtype;
 	}
 	
 	

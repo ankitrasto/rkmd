@@ -184,7 +184,7 @@ public class rkmdBackEnd{
 		headerLine = this.delimitLine((String)inputRefSpeciesHold.get(0)).split("\t"); 
 		
 		if(this.colIndex("Class", headerLine) < 0 || this.colIndex("Subclass", headerLine) < 0 || this.colIndex("Adduct", headerLine) < 0 || this.colIndex("KMD", headerLine) < 0 || this.colIndex("Number_of_Chains", headerLine) < 0 
-		|| this.colIndex("Headgroup_Mass", headerLine) < 0 || this.colIndex("MinC", headerLine) < 0 || this.colIndex("MaxC", headerLine) < 0 || this.colIndex("MaxDB", headerLine) < 0){
+		|| this.colIndex("Headgroup_Mass", headerLine) < 0 || this.colIndex("MinC", headerLine) < 0 || this.colIndex("MaxC", headerLine) < 0 || this.colIndex("MaxDB", headerLine) < 0 || this.colIndex("FA_type", headerLine) < 0){
 			throw new Exception("Input Reference KMD Data Incorrectly Formatted: Check to ensure that data contains properly named headers");
 		}
 		
@@ -202,7 +202,16 @@ public class rkmdBackEnd{
 				int maxCTemp = Integer.parseInt(tempHold[this.colIndex("maxC", headerLine)]);
 				double hmTemp = Double.parseDouble(tempHold[this.colIndex("Headgroup_Mass", headerLine)]);
 				int maxDBTemp = Integer.parseInt(tempHold[this.colIndex("MaxDB", headerLine)]);
-				inputRefSpecies[i-1] = new Compound(fullNameTemp, NChainsTemp, hmTemp, RefKMDTemp, minCTemp, maxCTemp, maxDBTemp);
+				String strFAtype = tempHold[this.colIndex("FA_type",headerLine)];
+				int auxFAtype = 0; 
+				
+				if(strFAtype.equalsIgnoreCase("aliphatic")){
+					System.out.println("Lipid Load, Using Aliphatic Type");
+					auxFAtype = 1;
+				}
+				
+				inputRefSpecies[i-1] = new Compound(fullNameTemp, NChainsTemp, hmTemp, RefKMDTemp, minCTemp, maxCTemp, maxDBTemp, auxFAtype);
+				
 				//System.out.println(inputRefSpecies[i-1].getInfo()); //VERBOSE
 			}catch(Exception e){
 				System.out.println("Error Loading input Library KMD File. Check to make sure it is properly formatted.");
@@ -381,8 +390,19 @@ public class rkmdBackEnd{
 					double numHold = ((mIso + 2*exactMass("H")*Math.abs(Math.round(rKMD)))/inputRefSpecies[j].getNC()) + exactMass("H") - exactMass("O");
 					double denomHold = (exactMass("C") + 2*exactMass("H"));
 						//if((double)inputMObs.get(i) == 678.507838079542) System.out.println(adductExtract + inputRefSpecies[j].getmObs() + "\t" + numHold/denomHold);
+					
+					//add modifiers for aliphatic FA, if chosen
+					if(inputRefSpecies[j].getFAtype() == 1){ //i.e, aliphatic
+						numHold += (exactMass("O") - 2*exactMass("H"));
+					}
+					
+					
 					double nTC = inputRefSpecies[j].getNC()*(numHold/denomHold);
 					//if((double)inputMObs.get(i) == 554.493157) System.out.println(inputRefSpecies[j].getName() + " , NTC = " + nTC);
+					
+					
+					
+					
 					if((Math.abs(Math.round(nTC) - nTC) <= this.NTCTolerance) && inputRefSpecies[j].inRange(nTC)){
 						matchResults[i] += "\tNTC_HIT\t" + Math.round(nTC) + "\t" + (Math.abs(Math.round(nTC) - nTC)) + "\t" + inputRefSpecies[j].getName().split(";")[1] + " [" + Math.round(nTC) + ":" + Math.abs(Math.round(rKMD)) + "]" + inputRefSpecies[j].getName().split(";")[2] + "\n";
 					}else{
@@ -513,7 +533,7 @@ public class rkmdBackEnd{
 		
 		final String path = "/home/ankit/Dropbox/RKMDProject_2013/SVN_checkout/tests/";
 		
-		rkimp.rkmdBackEnd test = new rkimp.rkmdBackEnd(path+"masses3.csv", path+"periodicMasses.csv", path+"ReferenceKMD-elna-maxDB.csv");
+		rkimp.rkmdBackEnd test = new rkimp.rkmdBackEnd(path+"masses3.csv", path+"periodicMasses.csv", path+"ReferenceKMD.csv");
 		test.loadFileInput(null);
 		System.out.println(test.exactMass("Mn"));
 		test.calculate(0.5, 0.10);
@@ -525,7 +545,7 @@ public class rkmdBackEnd{
 		test.writeToFile(path+"Results_POSITIVE.txt", 2);
 		test.setFilter(2);
 		test.writeToFile(path+"Results_NEGATIVE.txt", 2);
-		
+		test.setFilter(1);
 		System.out.println(test.printMatchResults());
 		
 		
