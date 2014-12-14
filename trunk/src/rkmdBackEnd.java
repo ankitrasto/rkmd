@@ -107,7 +107,7 @@ public class rkmdBackEnd{
 		BufferedReader bR = new BufferedReader(new FileReader(auxInputFile));
 		dataHold = bR.readLine();
 		while(dataHold != null){
-			input.add(this.delimitLine(dataHold));
+			input.add((dataHold));
 			dataHold = bR.readLine();
 		}
 		bR.close();
@@ -130,7 +130,7 @@ public class rkmdBackEnd{
 			if(auxHeader[i].equalsIgnoreCase(auxKey)) return i;
 		}
 		
-		return -1;
+		return -1; //<0 if not found
 	}
 		
 	
@@ -210,9 +210,43 @@ public class rkmdBackEnd{
 					auxFAtype = 1;
 				}
 				
+				if(strFAtype.equalsIgnoreCase("plasmalogen")){
+					System.out.println("Lipid Load, Using Plasmalogen Type");
+					auxFAtype = 2;
+				}
+				
 				inputRefSpecies[i-1] = new Compound(fullNameTemp, NChainsTemp, hmTemp, RefKMDTemp, minCTemp, maxCTemp, maxDBTemp, auxFAtype);
 				
-				//System.out.println(inputRefSpecies[i-1].getInfo()); //VERBOSE
+				//here, modify the compound for additional retention times, IF they exist
+				/**
+				 * index cases:
+				 * TLOW, THIGH = -1, x: [t <= x]
+				 * TLOW, THIGH = x -1: [t >= x]
+				 * TLOW, THIGH = x,y: [x <= t <= y]
+				 * TLOW, THIGH = -1, -1: no filtering, no columns definable
+				 **/
+				 
+				 String[] tempHoldCSV = ((String)inputRefSpeciesHold.get(i)).split(",");
+				 double auxLow = -1;
+				 double auxHigh = -1;
+				 
+				 try{
+					auxLow = Double.parseDouble(tempHoldCSV[this.colIndex("TLOW", headerLine)]);
+				 }catch(Exception e){
+					//e.printStackTrace();
+					auxLow = 0;
+				 }
+				 
+				 try{
+					auxHigh = Double.parseDouble(tempHoldCSV[this.colIndex("THIGH", headerLine)]);
+				 }catch(Exception e){
+					//e.printStackTrace();
+					auxHigh = Double.MAX_VALUE;
+				 }
+				 
+				 inputRefSpecies[i-1].addRetFilter(auxLow, auxHigh);
+				 
+				 System.out.println(inputRefSpecies[i-1].getInfo()); //VERBOSE TESTING
 			}catch(Exception e){
 				System.out.println("Error Loading input Library KMD File. Check to make sure it is properly formatted.");
 				e.printStackTrace();
@@ -247,7 +281,7 @@ public class rkmdBackEnd{
 				int crunchIndex = ((String)inputMObsHold.get(i)).indexOf("#");
 				if(crunchIndex < 0){ //line uncommented
 					try{
-						String auxHold[] = ((String)inputMObsHold.get(i)).split("\t");
+						String auxHold[] = this.delimitLine((String)inputMObsHold.get(i)).split("\t");
 						inputMObsList.add(Double.parseDouble(auxHold[0]));
 					}catch(Exception e){
 						System.out.println("Error Loading Input Experimental Data. Check to make sure that uncommented sections contain floating point numbers only.");
@@ -364,7 +398,7 @@ public class rkmdBackEnd{
 	// return true;
 	//}
 	
-	public void calculate(double rkmdTol, double NTCTol) throws Exception{
+	public void calculate(double rkmdTol, double NTCTol, boolean useRetFilter) throws Exception{
 		final double c1 = 14/14.01565;
 		final double c2 = 0.013399;
 		this.rkmdTolerance = rkmdTol;
@@ -372,13 +406,32 @@ public class rkmdBackEnd{
 		this.matchResults = new String[this.inputMObs.size()+1];
 		matchResults[this.inputMObs.size()] = (String)inputMObsHold.get(0);
 		
+		System.out.println("Retention Time Filtering: " + useRetFilter);
+		
 		for(int i = 0; i < inputMObs.size(); i++){
 			matchResults[i] = "";
 			for(int j = 0; j < inputRefSpecies.length; j++){
 				double rKMD = (1.0/c2)*((c1*(double)inputMObs.get(i))%1 - inputRefSpecies[j].getRefKMD()); //metric 1 (S1 - see implementation note, eq. 5)
 				//System.out.println(inputRefSpecies[j].getName() + "\t\t" + rKMD); //test verbose
-				if(((Math.abs(Math.abs(Math.round(rKMD))- Math.abs(rKMD))) <= this.rkmdTolerance) && rKMD <= 0.5 && Math.abs(rKMD) <= inputRefSpecies[j].getMaxDB()){
-					matchResults[i] += ((String)inputMObsHold.get(i+1)) + "\tHIT:\t" + inputRefSpecies[j].getName() + "\t" + rKMD + "\t" + (Math.abs(Math.abs(Math.round(rKMD)) - Math.abs(rKMD)));
+				
+				
+				boolean timeHit = true;
+				if(useRetFilter){
+					try{
+						double compoundTime = Double.parseDouble(delimitLine((String)inputMObsHold.get(i+1)).split("\t")[1]);
+						if(!inputRefSpecies[j].inRetRange(compoundTime)){
+							timeHit = false;
+						}
+						
+					}catch(Exception e){
+						System.out.println("**Error: Unable to Use Retention Time Filter**");
+					}
+				}
+				
+				if(((Math.abs(Math.abs(Math.round(rKMD))- Math.abs(rKMD))) <= this.rkmdTolerance) && rKMD <= 0.5 && Math.abs(rKMD) <= inputRefSpecies[j].getMaxDB() && timeHit){
+					
+					matchResults[i] += this.delimitLine((String)inputMObsHold.get(i+1)) + "\tHIT:\t" + inputRefSpecies[j].getName() + "\t" + rKMD + "\t" + (Math.abs(Math.abs(Math.round(rKMD)) - Math.abs(rKMD)));
+					
 					
 					//only perform NTC calculations for admissable RKMDs:
 					String adductExtract = (this.inputRefSpecies[j].getName()).split(";")[2];
@@ -386,7 +439,7 @@ public class rkmdBackEnd{
 					if(adductExtract.charAt(2) == '-') mAdduct *= -1;
 					//System.out.println(adductExtract + "\t" + mAdduct);
 					
-					double mIso = (double)this.inputMObs.get(i) - (inputRefSpecies[j].getmObs() + mAdduct);
+					double mIso = (double)this.inputMObs.get(i) - (inputRefSpecies[j].getmObs() + mAdduct); //mIso gives M_FA, experimental!
 					double numHold = ((mIso + 2*exactMass("H")*Math.abs(Math.round(rKMD)))/inputRefSpecies[j].getNC()) + exactMass("H") - exactMass("O");
 					double denomHold = (exactMass("C") + 2*exactMass("H"));
 						//if((double)inputMObs.get(i) == 678.507838079542) System.out.println(adductExtract + inputRefSpecies[j].getmObs() + "\t" + numHold/denomHold);
@@ -404,13 +457,32 @@ public class rkmdBackEnd{
 					
 					
 					if((Math.abs(Math.round(nTC) - nTC) <= this.NTCTolerance) && inputRefSpecies[j].inRange(nTC)){
-						matchResults[i] += "\tNTC_HIT\t" + Math.round(nTC) + "\t" + (Math.abs(Math.round(nTC) - nTC)) + "\t" + inputRefSpecies[j].getName().split(";")[1] + " [" + Math.round(nTC) + ":" + Math.abs(Math.round(rKMD)) + "]" + inputRefSpecies[j].getName().split(";")[2] + "\n";
+						matchResults[i] += "\tNTC_HIT\t" + Math.round(nTC) + "\t" + (Math.abs(Math.round(nTC) - nTC)) + "\t" + inputRefSpecies[j].getName().split(";")[1] + " [" + Math.round(nTC) + ":" + Math.abs(Math.round(rKMD)) + "]" + inputRefSpecies[j].getName().split(";")[2] + "\t";
+						//FINISH HERE the ppm deviation from the calculated mass should be determined here
+						
+						double mTFA = -1;
+						double ppm = -1;
+						
+						if(inputRefSpecies[j].getFAtype() == 0){ //aliphatic MFA calculation
+							mTFA = ((inputRefSpecies[j].getNC())*(Math.round(numHold/denomHold)*exactMass("C") + (2*(Math.round(numHold/denomHold)) - 1)*(exactMass("H")) + exactMass("O"))) - (2*exactMass("H")*Math.abs(Math.round(rKMD)));
+						}
+						
+						if(inputRefSpecies[j].getFAtype() == 1){
+							mTFA = ((inputRefSpecies[j].getNC())*(Math.round(numHold/denomHold)*exactMass("C") + (2*(Math.round(numHold/denomHold)) + 1)*exactMass("H"))) - (2*exactMass("H")*Math.abs(Math.round(rKMD)));
+						}
+						
+						double mTCalc = mTFA + inputRefSpecies[j].getmObs() + mAdduct;
+						ppm = 1E6*(mTCalc - (double)this.inputMObs.get(i))/mTCalc;
+						
+						matchResults[i] += Math.abs(ppm) + "\n";
+						
+						
 					}else{
 						matchResults[i] += "\tNTC_MISS\t" + Math.round(nTC) + "\t" + (Math.abs(Math.round(nTC) - nTC)) + "\n";
 					}
 					
 				}else{
-					matchResults[i] += ((String)inputMObsHold.get(i+1)) + "\tMISS:\t" + inputRefSpecies[j].getName() + "\t" + rKMD + "\t" + (Math.abs(Math.round(rKMD) - rKMD)) + "\n";
+					matchResults[i] += this.delimitLine((String)inputMObsHold.get(i+1)) + "\tMISS:\t" + inputRefSpecies[j].getName() + "\t" + rKMD + "\t" + (Math.abs(Math.round(rKMD) - rKMD)) + "\n";
 				}
 			}
 			
@@ -427,7 +499,7 @@ public class rkmdBackEnd{
 		File output = new File(fOutput);
 		PrintWriter pW = new PrintWriter(new FileWriter(fOutput, false));
 		
-		String header = (matchResults[matchResults.length - 1]) + "\t MATCH_RESULT \t Compound_Name \t Family \t Adduct  \t RKMD \t RKMD_Tolerance \t NTC_RESULT \t Total_Carbons \t Carbon_Tolerance \t Matched Lipid-ID";
+		String header = this.delimitLine(matchResults[matchResults.length - 1]) + "\t MATCH_RESULT \t Compound_Name \t Family \t Adduct  \t RKMD \t RKMD_Tolerance \t NTC_RESULT \t Total_Carbons \t Carbon_Tolerance \t Matched_Lipid-ID \t Match_PPM";
 		System.out.println("Filter Select = " + this.filterSelect);
 		pW.println(header);
 		for(int i = 0; i < (this.matchResults.length-1); i++){
@@ -536,7 +608,7 @@ public class rkmdBackEnd{
 		rkimp.rkmdBackEnd test = new rkimp.rkmdBackEnd(path+"masses3.csv", path+"periodicMasses.csv", path+"ReferenceKMD.csv");
 		test.loadFileInput(null);
 		System.out.println(test.exactMass("Mn"));
-		test.calculate(0.5, 0.10);
+		test.calculate(0.5, 0.10, true);
 		
 		
 		test.writeToFile(path+"Results_DEBUG.txt", 1);

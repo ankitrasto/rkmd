@@ -53,7 +53,7 @@ public class main extends javax.swing.JFrame {
                 pgStatus.setValue(50);
                 
                 
-                engine.calculate((Double)components.get(5), (Double)components.get(6));              
+                engine.calculate((Double)components.get(5), (Double)components.get(6), (Boolean)components.get(9));              
             }else{ //1 = using manual text entry formatted as a CSV file. 
                //temporarily generate a CSV file from the manual text field box
                System.out.println("Using Manual Entry");
@@ -76,7 +76,7 @@ public class main extends javax.swing.JFrame {
                pgStatus.setValue(50);
                
                
-               engine.calculate((Double)components.get(5), (Double)components.get(6));
+               engine.calculate((Double)components.get(5), (Double)components.get(6), (Boolean)components.get(9));
             }
             
             
@@ -163,6 +163,7 @@ public class main extends javax.swing.JFrame {
         chxResultsToFile = new javax.swing.JCheckBox();
         btnBrowseOut = new javax.swing.JButton();
         txtOutputDest = new javax.swing.JTextField();
+        chkRetFilter = new javax.swing.JCheckBox();
         jPanel4 = new javax.swing.JPanel();
         btnCalculate = new javax.swing.JButton();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -178,6 +179,7 @@ public class main extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setBackground(new java.awt.Color(255, 255, 255));
+        setResizable(false);
 
         jTabbedPane1.setBackground(new java.awt.Color(238, 238, 238));
         jTabbedPane1.setName(""); // NOI18N
@@ -312,6 +314,13 @@ public class main extends javax.swing.JFrame {
             }
         });
 
+        chkRetFilter.setText("Retention Time Filtering");
+        chkRetFilter.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                chkRetFilterActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
@@ -344,7 +353,8 @@ public class main extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(txtOutputDest, javax.swing.GroupLayout.PREFERRED_SIZE, 330, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(btnBrowseOut)))
+                        .addComponent(btnBrowseOut))
+                    .addComponent(chkRetFilter))
                 .addContainerGap(77, Short.MAX_VALUE))
         );
         jPanel3Layout.setVerticalGroup(
@@ -369,7 +379,9 @@ public class main extends javax.swing.JFrame {
                     .addComponent(btnBrowseOut)
                     .addComponent(txtOutputDest, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(chxResultsToFile, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(168, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(chkRetFilter)
+                .addContainerGap(141, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("(2) Calculation Parameters", jPanel3);
@@ -634,6 +646,7 @@ public class main extends javax.swing.JFrame {
             components.add(Double.parseDouble(this.txtNTCTol.getText())); //6, Double
             components.add(this.chxResultsToFile.isSelected()); //7, Boolean
             components.add(this.txtOutputDest.getText()); //8, String
+            components.add(this.chkRetFilter.isSelected()); //9, Boolean
             
             //execute!
             this.pgStatus.setStringPainted(true);
@@ -714,6 +727,10 @@ public class main extends javax.swing.JFrame {
         this.txtManualInput.setText("");
     }//GEN-LAST:event_btnClearManualActionPerformed
 
+    private void chkRetFilterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chkRetFilterActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_chkRetFilterActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -756,6 +773,7 @@ public class main extends javax.swing.JFrame {
     private javax.swing.JButton btnClearManual;
     private javax.swing.JComboBox cbxFilter;
     private javax.swing.JComboBox cbxInputMethod;
+    private javax.swing.JCheckBox chkRetFilter;
     private javax.swing.JCheckBox chxResultsToFile;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
