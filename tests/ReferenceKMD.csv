@@ -1,16 +1,16 @@
-Class,FA_type,Subclass ,Adduct,Headgroup_Mass,KMD,Number_of_Chains,MinC,MaxC,MaxDB
-Glycerophospholipids,Carbonyl,LPE,[M+H]+,256.095002,0.785551,1,12,24,7
-Glycerophospholipids,Carbonyl,LPC,[M+H]+,214.048051,0.785551,1,11,24,8
-Glycerophospholipids,Carbonyl,LPG,[M-H]-,245.042633,0.73322,1,9,25,15
-Ceramides/Ceramide_phosphates/Sphingomyelins,Carbonyl,Ceramide(d18:1),[M+H]+,298.274604,0.918054,1,9,25,10
-Ceramides/Ceramide_phosphates/Sphingomyelins,Carbonyl,Ceramide(d17:1),[M+H]+,284.258954,0.918054,1,9,25,11
-<None>,Carbonyl,CE,[M+NH4]+,385.34704,0.900799606,1,9,25,12
-<None>,Carbonyl,FA,[M-H]-,17.00274,0.9474102164,1,9,25,13
-Glycerophospholipids,Carbonyl,PE,[M+H]+,213.040227,0.7497529826,2,27,44,14
-Glycerophospholipids,Carbonyl,PC,[M+H]+,255.087177,0.7497529826,2,27,44,15
-Glycerolipids,Carbonyl,DAG,[M+NH4]+,90.031695,0.885564,2,19,50,16
-Glycerophospholipids,Carbonyl,PC,[M-H]-,255.087177,0.736904,2,19,50,17
-Glycerophospholipids,Carbonyl,PG,[M-H]-,244.034808,0.696876,2,19,50,18
-Glycerophospholipids,Carbonyl,PI,[M-H]-,332.050852,0.614641,2,19,50,19
-Glycerolipids,Carbonyl,TAG,[M+NH4]+,89.02387,0.849219,3,29,75,20
-Glycerophospholipids,Aliphatic,PAF,[M+H]+,298.105566,0.786099,1,10,26,3
+Class,FA_type,Subclass ,Adduct,Headgroup_Mass,KMD,Number_of_Chains,MinC,MaxC,MaxDB,TLOW,THIGH
+Glycerophospholipids,Carbonyl,LPE,[M+H]+,256.095002,0.785551,1,12,24,7,,
+Glycerophospholipids,Carbonyl,LPC,[M+H]+,214.048051,0.785551,1,11,24,8,,
+Glycerophospholipids,Carbonyl,LPG,[M-H]-,245.042633,0.73322,1,9,25,15,,
+Ceramides/Ceramide_phosphates/Sphingomyelins,Carbonyl,Ceramide(d18:1),[M+H]+,298.274604,0.918054,1,9,25,10,,
+Ceramides/Ceramide_phosphates/Sphingomyelins,Carbonyl,Ceramide(d17:1),[M+H]+,284.258954,0.918054,1,9,25,11,,
+<None>,Carbonyl,CE,[M+NH4]+,385.34704,0.900799606,1,9,25,12,,
+<None>,Carbonyl,FA,[M-H]-,17.00274,0.9474102164,1,9,25,13,,
+Glycerophospholipids,Carbonyl,PE,[M+H]+,213.040227,0.7497529826,2,27,44,14,,
+Glycerophospholipids,Carbonyl,PC,[M+H]+,255.087177,0.7497529826,2,27,44,15,,
+Glycerolipids,Carbonyl,DAG,[M+NH4]+,90.031695,0.885564,2,19,50,16,,
+Glycerophospholipids,Carbonyl,PC,[M-H]-,255.087177,0.736904,2,19,50,17,,
+Glycerophospholipids,Carbonyl,PG,[M-H]-,244.034808,0.696876,2,19,50,18,,
+Glycerophospholipids,Carbonyl,PI,[M-H]-,332.050852,0.614641,2,19,50,19,,
+Glycerolipids,Carbonyl,TAG,[M+NH4]+,89.02387,0.849219,3,29,75,20,,
+Glycerophospholipids,Aliphatic,PAF,[M+H]+,298.105566,0.786099,1,10,26,3,29.49,35.34

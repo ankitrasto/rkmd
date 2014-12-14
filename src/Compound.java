@@ -7,7 +7,21 @@
 package rkimp;
 
 public class Compound{
-      
+    
+    
+    class timeWindow{
+		public double tLow;
+		public double tHigh; 
+		public timeWindow(double tLoAux, double tHighAux){
+			tLow = tLoAux;
+			tHigh = tHighAux;
+		}
+	}  
+	
+	/**
+	 * Semantically represents an optional range of retention times for use in filtering
+	 */
+	 private timeWindow retFilter = null;
 	
 	/**
 	* Semantically represents the compound's name; stored as a hierarchy of 
@@ -78,6 +92,30 @@ auxRefKMD, int auxMinC, int auxMaxC, int auxMaxDB, int auxFAtype){
 		this.FAtype = auxFAtype;
 	}
 	
+	
+	public Compound(String auxName, int auxNChains, double auxMObs, double 
+auxRefKMD, int auxMinC, int auxMaxC, int auxMaxDB, int auxFAtype, double tLo, double tHi){
+		this.name = auxName;
+		this.nChains = auxNChains;
+		this.mObs = auxMObs;
+		this.refKMD = auxRefKMD;
+		this.minC = auxMinC;
+		this.maxC = auxMaxC;
+		this.maxDB = auxMaxDB;
+		this.FAtype = auxFAtype;
+		this.retFilter = new timeWindow(tLo, tHi);
+	}
+	
+	//modifiers
+	
+	/**
+	 * Modify this compound with a sensical timewindow 
+	 */
+	 
+	 public void addRetFilter(double tLo, double tHi){
+		this.retFilter = new timeWindow(tLo, tHi);
+	 }
+	
 	//accessors:
 	
 	/**
@@ -124,6 +162,17 @@ auxRefKMD, int auxMinC, int auxMaxC, int auxMaxDB, int auxFAtype){
 		return (auxCNo <= this.maxC) && (auxCNo >= this.minC);
 	}
 	
+	/**
+	 * Determines if given value falls within an optional retention time window
+	 * */
+	 
+	 public boolean inRetRange(double auxT){
+		if(retFilter != null){
+			return (auxT >= retFilter.tLow && auxT <= retFilter.tHigh);
+		}
+		return true;
+	 }
+	
 	
 	/**
 	  Accessor for the name of this compound.
@@ -144,12 +193,11 @@ auxRefKMD, int auxMinC, int auxMaxC, int auxMaxDB, int auxFAtype){
 	  Test accessor for all parameters of this compound; prints name, reference KMD, number of chains, m/z value, and minimum/maximum total carbon atoms.
 	*/
 	public String getInfo(){
-		String temp = this.name + " KMD = " + this.refKMD + " , NC=" + 
-this.nChains + " , HM=" + this.mObs;
+		String temp = this.name + " KMD = " + this.refKMD + " , NC=" + this.nChains + " , HM=" + this.mObs;
 		temp += ", xE[" + this.minC + "," + this.maxC + "]";
 		temp += ", MAXDB = " + this.maxDB;
+		temp += ", **RETFILTER = (" + this.retFilter.tLow + " , " + this.retFilter.tHigh + ")";
 		return temp;
 	}
 
- 
 }
