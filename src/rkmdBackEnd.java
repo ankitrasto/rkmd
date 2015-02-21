@@ -205,15 +205,28 @@ public class rkmdBackEnd{
 				String strFAtype = tempHold[this.colIndex("FA_type",headerLine)];
 				int auxFAtype = 0; 
 				
-				if(strFAtype.equalsIgnoreCase("aliphatic")){
+				if(strFAtype.equalsIgnoreCase("carbonyl")){
+					auxFAtype = 0;
+					System.out.println("Lipid Load, Using Carbonyl Type");
+				}else if(strFAtype.equalsIgnoreCase("aliphatic")){
 					System.out.println("Lipid Load, Using Aliphatic Type");
+					auxFAtype = -1;
+				}else if(strFAtype.equalsIgnoreCase("plasmalogen")){
+					System.out.println("Lipid Load, Using Plasmalogen Type");
 					auxFAtype = 1;
+				}else{
+					try{
+						auxFAtype = Integer.parseInt(strFAtype);
+						System.out.println("Custom Lipid Load, NCC = " + auxFAtype);
+					}catch(Exception e){
+						auxFAtype = 0;
+						System.out.println("Lipid Load, UNKNOWN FA type, defaulting to Carbonyl Type");
+					}
 				}
 				
-				if(strFAtype.equalsIgnoreCase("plasmalogen")){
-					System.out.println("Lipid Load, Using Plasmalogen Type");
-					auxFAtype = 2;
-				}
+				
+				
+				
 				
 				inputRefSpecies[i-1] = new Compound(fullNameTemp, NChainsTemp, hmTemp, RefKMDTemp, minCTemp, maxCTemp, maxDBTemp, auxFAtype);
 				
@@ -414,7 +427,6 @@ public class rkmdBackEnd{
 				double rKMD = (1.0/c2)*((c1*(double)inputMObs.get(i))%1 - inputRefSpecies[j].getRefKMD()); //metric 1 (S1 - see implementation note, eq. 5)
 				//System.out.println(inputRefSpecies[j].getName() + "\t\t" + rKMD); //test verbose
 				
-				
 				boolean timeHit = true;
 				if(useRetFilter){
 					try{
@@ -427,6 +439,7 @@ public class rkmdBackEnd{
 						System.out.println("**Error: Unable to Use Retention Time Filter**");
 					}
 				}
+				
 				
 				if(((Math.abs(Math.abs(Math.round(rKMD))- Math.abs(rKMD))) <= this.rkmdTolerance) && rKMD <= 0.5 && Math.abs(rKMD) <= inputRefSpecies[j].getMaxDB() && timeHit){
 					
@@ -445,30 +458,38 @@ public class rkmdBackEnd{
 						//if((double)inputMObs.get(i) == 678.507838079542) System.out.println(adductExtract + inputRefSpecies[j].getmObs() + "\t" + numHold/denomHold);
 					
 					//add modifiers for aliphatic FA, if chosen
-					if(inputRefSpecies[j].getFAtype() == 1){ //i.e, aliphatic
+					if(inputRefSpecies[j].getFAtype() == -1){ //i.e, aliphatic
 						numHold += (exactMass("O") - 2*exactMass("H"));
 					}
 					
-					
 					double nTC = inputRefSpecies[j].getNC()*(numHold/denomHold);
+					
+					
+					//modifiers for other getFAtype; semantically, getFAtype == NCC
+					if(inputRefSpecies[j].getFAtype() > 0){
+						numHold = mIso - inputRefSpecies[j].getFAtype()*exactMass("O") - 2*exactMass("H")*(0.5*inputRefSpecies[j].getNC() - inputRefSpecies[j].getFAtype() - Math.abs(Math.round(rKMD)));
+						nTC = (numHold/denomHold);
+					}
+					
 					//if((double)inputMObs.get(i) == 554.493157) System.out.println(inputRefSpecies[j].getName() + " , NTC = " + nTC);
-					
-					
-					
 					
 					if((Math.abs(Math.round(nTC) - nTC) <= this.NTCTolerance) && inputRefSpecies[j].inRange(nTC)){
 						matchResults[i] += "\tNTC_HIT\t" + Math.round(nTC) + "\t" + (Math.abs(Math.round(nTC) - nTC)) + "\t" + inputRefSpecies[j].getName().split(";")[1] + " [" + Math.round(nTC) + ":" + Math.abs(Math.round(rKMD)) + "]" + inputRefSpecies[j].getName().split(";")[2] + "\t";
-						//FINISH HERE the ppm deviation from the calculated mass should be determined here
+						//the ppm deviation from the calculated mass should be determined here
 						
 						double mTFA = -1;
 						double ppm = -1;
 						
-						if(inputRefSpecies[j].getFAtype() == 0){ //aliphatic MFA calculation
+						if(inputRefSpecies[j].getFAtype() == 0){ //carbonyl MFA calculation
 							mTFA = ((inputRefSpecies[j].getNC())*(Math.round(numHold/denomHold)*exactMass("C") + (2*(Math.round(numHold/denomHold)) - 1)*(exactMass("H")) + exactMass("O"))) - (2*exactMass("H")*Math.abs(Math.round(rKMD)));
 						}
 						
-						if(inputRefSpecies[j].getFAtype() == 1){
+						if(inputRefSpecies[j].getFAtype() == -1){ //aliphatic MFA calculation
 							mTFA = ((inputRefSpecies[j].getNC())*(Math.round(numHold/denomHold)*exactMass("C") + (2*(Math.round(numHold/denomHold)) + 1)*exactMass("H"))) - (2*exactMass("H")*Math.abs(Math.round(rKMD)));
+						}
+						
+						if(inputRefSpecies[j].getFAtype() > 0){ //plasmalogen or other NCC
+							mTFA = (Math.round(nTC)*denomHold) + inputRefSpecies[j].getFAtype()*exactMass("O") + 2*exactMass("H")*(0.5*inputRefSpecies[j].getNC() - inputRefSpecies[j].getFAtype() - Math.abs(Math.round(rKMD)));
 						}
 						
 						double mTCalc = mTFA + inputRefSpecies[j].getmObs() + mAdduct;
@@ -608,7 +629,7 @@ public class rkmdBackEnd{
 		rkimp.rkmdBackEnd test = new rkimp.rkmdBackEnd(path+"masses3.csv", path+"periodicMasses.csv", path+"ReferenceKMD.csv");
 		test.loadFileInput(null);
 		System.out.println(test.exactMass("Mn"));
-		test.calculate(0.5, 0.10, true);
+		test.calculate(0.5, 0.5, true);
 		
 		
 		test.writeToFile(path+"Results_DEBUG.txt", 1);
