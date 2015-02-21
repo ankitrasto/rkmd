@@ -578,17 +578,17 @@ public class rkmdBackEnd{
 				if(!(lineHold[j].indexOf("HIT") < 0) && !(lineHold[j].indexOf("NTC_HIT") < 0)){
 					//apply filtering here
 					if(filterSelect == 1 && !(lineHold[j].indexOf("]+") < 0) && !(lineHold[j].indexOf("HIT") < 0)){
-						output += lineHold[j].split("\t")[0] + ", " + lineHold[j].split("\t")[lineHold[j].split("\t").length - 1] + "\n";
+						output += lineHold[j].split("\t")[0] + ", " + lineHold[j].split("\t")[lineHold[j].split("\t").length - 2] + "\n";
 						resultCount++;
 					}
 					
 					if(filterSelect == 2 && !(lineHold[j].indexOf("]-") < 0) && !(lineHold[j].indexOf("HIT") < 0)){
-						output += lineHold[j].split("\t")[0] + ", " + lineHold[j].split("\t")[lineHold[j].split("\t").length - 1] + "\n";
+						output += lineHold[j].split("\t")[0] + ", " + lineHold[j].split("\t")[lineHold[j].split("\t").length - 2] + "\n";
 						resultCount++;
 					}
 					
 					if(filterSelect == 0){
-						output += lineHold[j].split("\t")[0] + ", " + lineHold[j].split("\t")[lineHold[j].split("\t").length - 1] + "\n";
+						output += lineHold[j].split("\t")[0] + ", " + lineHold[j].split("\t")[lineHold[j].split("\t").length - 2] + "\n";
 						resultCount++;
 					}
 

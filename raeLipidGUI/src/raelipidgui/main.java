@@ -433,7 +433,7 @@ public class main extends javax.swing.JFrame {
 
         jLabel3.setForeground(new java.awt.Color(255, 255, 0));
         jLabel3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/gpl-v3-logo.png"))); // NOI18N
-        jLabel3.setText("<html>  Front-End Version: 0.9 (beta) <br> Back-End Version: RKMD revision 14 <br> http://rkmd.googlecode.com <br> License: GPL v3 <br> </html>");
+        jLabel3.setText("<html>  Front-End Version: 0.9 (beta) <br> Back-End Version: RKMD revision 28 <br> http://rkmd.googlecode.com <br> License: GPL v3 <br> </html>");
 
         jLabel4.setForeground(new java.awt.Color(255, 255, 0));
         jLabel4.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
