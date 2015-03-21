@@ -411,6 +411,7 @@ public class rkmdBackEnd{
 	// return true;
 	//}
 	
+	
 	public void calculate(double rkmdTol, double NTCTol, boolean useRetFilter) throws Exception{
 		final double c1 = 14/14.01565;
 		final double c2 = 0.013399;
@@ -443,7 +444,7 @@ public class rkmdBackEnd{
 				
 				if(((Math.abs(Math.abs(Math.round(rKMD))- Math.abs(rKMD))) <= this.rkmdTolerance) && rKMD <= 0.5 && Math.abs(rKMD) <= inputRefSpecies[j].getMaxDB() && timeHit){
 					
-					matchResults[i] += this.delimitLine((String)inputMObsHold.get(i+1)) + "\tHIT:\t" + inputRefSpecies[j].getName() + "\t" + rKMD + "\t" + (Math.abs(Math.abs(Math.round(rKMD)) - Math.abs(rKMD)));
+					matchResults[i] += this.delimitLine((String)inputMObsHold.get(i+1)) + "\tHIT:\t" + (inputRefSpecies[j].getName()).replace(";","\t") + "\t" + rKMD + "\t" + (Math.abs(Math.abs(Math.round(rKMD)) - Math.abs(rKMD)));
 					
 					
 					//only perform NTC calculations for admissable RKMDs:
