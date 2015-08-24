@@ -13,10 +13,9 @@ rae-Lipid/RKMD (rae: Roger, Ankit, Elna) is a basic console and GUI-based screen
 
 <b>2015 Feb 21: RKMD <a href='https://code.google.com/p/rkmd/source/detail?r=28'>Revision 28</a>, v.0.5.3 (rae-LipID GUI) <a href='https://googledrive.com/host/0Bx4y1oB8xOUva21FdVY4OGtUTjg/raeLipid_v.0.5.3.zip'>(Direct Download)</a></b>
 <ul><li>fixed bug in rae-LipID GUI that caused match results window to print ppm error instead of match name<br>
-</li><li>added functionality for plasmalogen-class species: "Plasmalogen" can now be specified under the "FA_type" field of the referenceKMD.csv value. Additionally, any number of carbonyl chains "Ncc" can be specified as any integer value greater than 0 since the following equation is now used:<br>
-<img src='http://latex.codecogs.com/png.latex?N_{TC}%20%3D%20\frac{m_{FA}%20-%20N_{cc}m_O%20-%202m_H%28\frac{N_{Ch}}{2}%20-%20N_{cc}%20-%20\textrm{RKMD}%29}{2m_H&plus;2m_O}%.jpg' alt=''></li></ul>
+</li><li>added functionality for plasmalogen-class species: "Plasmalogen" can now be specified under the "FA_type" field of the referenceKMD.csv value. Additionally, any number of carbonyl chains "Ncc" can be specified as any integer value greater than 0 since the following equation is now used: http://tinyurl.com/eqnrkmd.
 
-Where N_ch represents the number of chains attached to the headgroup, N_TC represents the total number of carbon atoms in the fatty acid chains, and m_X are atomic masses for each element X.<br>
+<br> Where N_ch represents the number of chains attached to the headgroup, N_TC represents the total number of carbon atoms in the fatty acid chains, and m_X are atomic masses for each element X.<br>
 <ul><li>Further revisions are underway in which different degrees of oxidation for the fatty acid chains can be taken into account.</li></ul>
 
 <b>2014 Dec 14: RKMD <a href='https://code.google.com/p/rkmd/source/detail?r=22'>Revision 22</a>, v.0.5.2 (rae-lipID GUI) <a href='https://googledrive.com/host/0Bx4y1oB8xOUva21FdVY4OGtUTjg/RKMD_v.0.5.2.zip'>(Direct Download)</a></b>
