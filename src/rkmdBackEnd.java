@@ -13,6 +13,38 @@ package rkimp;
 import java.io.*;
 import java.util.*;
 
+class oxFactor{
+	int nh;
+	int no;
+	double DOX;
+	String descriptor;
+	
+	oxFactor(int nhAux, int noAux, double DOXAux, String descriptorAux){
+		nh = nhAux;
+		no = noAux;
+		DOX = DOXAux;
+		descriptor = descriptorAux;
+	}
+	
+	
+	String printDesc(){
+		return descriptor;
+	}
+	
+	double correctionFactor(double mH, double mO, double mC){
+		return (nh*mH + no*mO)/(mC+2*mH);
+	}
+	
+	double correctionFactorNum(double mH, double mO){
+		return (nh*mH + no*mO);
+	}
+	
+	boolean checkDOX(double rkmdAux){
+		if(DOX == -1) return true;
+		else return (rkmdAux >= DOX);
+	}
+}
+
 public class rkmdBackEnd{
 	
 	//input arrays + output array
@@ -21,6 +53,7 @@ public class rkmdBackEnd{
 	private Pair[] inputMZRef; //if CLI/file input is used, initially load results into ArrayList. 
 	private Compound[] inputRefSpecies;
 	private String[] matchResults; //should match number of lines in input/length of inputMObs
+	private oxFactor oxTable[]; //oxidation table
 	
 	//file IOs:
 	private File fInputMObs; //raw observational data
@@ -45,6 +78,7 @@ public class rkmdBackEnd{
 			this.fInputMObs = new File(fNameInputMObs); fileMarker++;
 			this.fInputMZRef = new File(fNameInputMZ); fileMarker++;
 			this.fInputRefSpecies = new File(fNameInputSpecies); fileMarker++;
+			
 		}catch(Exception e){
 			System.out.println("VERBOSE: IO Error at fileMarker= " + fileMarker);
 			checkFailure = true;
@@ -420,6 +454,15 @@ public class rkmdBackEnd{
 		this.matchResults = new String[this.inputMObs.size()+1];
 		matchResults[this.inputMObs.size()] = (String)inputMObsHold.get(0);
 		
+		//oxidation table object initialization
+		oxTable = new oxFactor[5];
+		oxTable[0] = new oxFactor(0,0,-1,""); //wildcard/uncorrected table entry
+		oxTable[1] = new oxFactor(0,1,1,"ketone");
+		oxTable[2] = new oxFactor(2,1,1,"hydroxyl");
+		oxTable[3] = new oxFactor(1,2,1,"peroxide_radical");
+		oxTable[4] = new oxFactor(2,2,1,"peracid");
+		
+		
 		System.out.println("Retention Time Filtering: " + useRetFilter);
 		
 		for(int i = 0; i < inputMObs.size(); i++){
@@ -444,7 +487,9 @@ public class rkmdBackEnd{
 				
 				if(((Math.abs(Math.abs(Math.round(rKMD))- Math.abs(rKMD))) <= this.rkmdTolerance) && rKMD <= 0.5 && Math.abs(rKMD) <= inputRefSpecies[j].getMaxDB() && timeHit){
 					
-					matchResults[i] += this.delimitLine((String)inputMObsHold.get(i+1)) + "\tHIT:\t" + (inputRefSpecies[j].getName()).replace(";","\t") + "\t" + rKMD + "\t" + (Math.abs(Math.abs(Math.round(rKMD)) - Math.abs(rKMD)));
+					String tabHold = this.delimitLine((String)inputMObsHold.get(i+1)) + "\tHIT:\t" + (inputRefSpecies[j].getName()).replace(";","\t") + "\t" + rKMD + "\t" + (Math.abs(Math.abs(Math.round(rKMD)) - Math.abs(rKMD)));
+					
+					matchResults[i] += tabHold;
 					
 					
 					//only perform NTC calculations for admissable RKMDs:
@@ -453,55 +498,89 @@ public class rkmdBackEnd{
 					if(adductExtract.charAt(2) == '-') mAdduct *= -1;
 					//System.out.println(adductExtract + "\t" + mAdduct);
 					
-					double mIso = (double)this.inputMObs.get(i) - (inputRefSpecies[j].getmObs() + mAdduct); //mIso gives M_FA, experimental!
-					double numHold = ((mIso + 2*exactMass("H")*Math.abs(Math.round(rKMD)))/inputRefSpecies[j].getNC()) + exactMass("H") - exactMass("O");
-					double denomHold = (exactMass("C") + 2*exactMass("H"));
-						//if((double)inputMObs.get(i) == 678.507838079542) System.out.println(adductExtract + inputRefSpecies[j].getmObs() + "\t" + numHold/denomHold);
+					for(int k = 0; k < oxTable.length; k++){ //start k-loop
 					
-					//add modifiers for aliphatic FA, if chosen
-					if(inputRefSpecies[j].getFAtype() == -1){ //i.e, aliphatic
-						numHold += (exactMass("O") - 2*exactMass("H"));
-					}
-					
-					double nTC = inputRefSpecies[j].getNC()*(numHold/denomHold);
-					
-					
-					//modifiers for other getFAtype; semantically, getFAtype == NCC
-					if(inputRefSpecies[j].getFAtype() > 0){
-						numHold = mIso - inputRefSpecies[j].getFAtype()*exactMass("O") - 2*exactMass("H")*(0.5*inputRefSpecies[j].getNC() - inputRefSpecies[j].getFAtype() - Math.abs(Math.round(rKMD)));
-						nTC = (numHold/denomHold);
-					}
-					
-					//if((double)inputMObs.get(i) == 554.493157) System.out.println(inputRefSpecies[j].getName() + " , NTC = " + nTC);
-					
-					if((Math.abs(Math.round(nTC) - nTC) <= this.NTCTolerance) && inputRefSpecies[j].inRange(nTC)){
-						matchResults[i] += "\tNTC_HIT\t" + Math.round(nTC) + "\t" + (Math.abs(Math.round(nTC) - nTC)) + "\t" + inputRefSpecies[j].getName().split(";")[1] + " [" + Math.round(nTC) + ":" + Math.abs(Math.round(rKMD)) + "]" + inputRefSpecies[j].getName().split(";")[2] + "\t";
-						//the ppm deviation from the calculated mass should be determined here
+						double mIso = (double)this.inputMObs.get(i) - (inputRefSpecies[j].getmObs() + mAdduct); //mIso gives M_FA, experimental!
+						double numHold = ((mIso + 2*exactMass("H")*Math.abs(Math.round(rKMD)))/inputRefSpecies[j].getNC()) + exactMass("H") - exactMass("O");
+						double denomHold = (exactMass("C") + 2*exactMass("H"));
+							//if((double)inputMObs.get(i) == 678.507838079542) System.out.println(adductExtract + inputRefSpecies[j].getmObs() + "\t" + numHold/denomHold);
 						
-						double mTFA = -1;
-						double ppm = -1;
-						
-						if(inputRefSpecies[j].getFAtype() == 0){ //carbonyl MFA calculation
-							mTFA = ((inputRefSpecies[j].getNC())*(Math.round(numHold/denomHold)*exactMass("C") + (2*(Math.round(numHold/denomHold)) - 1)*(exactMass("H")) + exactMass("O"))) - (2*exactMass("H")*Math.abs(Math.round(rKMD)));
+						//add modifiers for aliphatic FA, if chosen
+						if(inputRefSpecies[j].getFAtype() == -1){ //i.e, aliphatic
+							numHold += (exactMass("O") - 2*exactMass("H"));
 						}
 						
-						if(inputRefSpecies[j].getFAtype() == -1){ //aliphatic MFA calculation
-							mTFA = ((inputRefSpecies[j].getNC())*(Math.round(numHold/denomHold)*exactMass("C") + (2*(Math.round(numHold/denomHold)) + 1)*exactMass("H"))) - (2*exactMass("H")*Math.abs(Math.round(rKMD)));
+						double nTC = inputRefSpecies[j].getNC()*((numHold)/denomHold);
+						
+						
+						//modifiers for other getFAtype; semantically, getFAtype == NCC
+						if(inputRefSpecies[j].getFAtype() > 0){
+							numHold = mIso - inputRefSpecies[j].getFAtype()*exactMass("O") - 2*exactMass("H")*(0.5*inputRefSpecies[j].getNC() - inputRefSpecies[j].getFAtype() - Math.abs(Math.round(rKMD)));
+							nTC = (numHold/denomHold);
 						}
 						
-						if(inputRefSpecies[j].getFAtype() > 0){ //plasmalogen or other NCC
-							mTFA = (Math.round(nTC)*denomHold) + inputRefSpecies[j].getFAtype()*exactMass("O") + 2*exactMass("H")*(0.5*inputRefSpecies[j].getNC() - inputRefSpecies[j].getFAtype() - Math.abs(Math.round(rKMD)));
+						//add correction factor generic to any equation
+						nTC = nTC - (oxTable[k].correctionFactor(this.exactMass("H"),this.exactMass("O"),this.exactMass("C")));
+						
+						//if((double)inputMObs.get(i) == 554.493157) System.out.println(inputRefSpecies[j].getName() + " , NTC = " + nTC);
+						
+						if((Math.abs(Math.round(nTC) - nTC) <= this.NTCTolerance) && inputRefSpecies[j].inRange(nTC) && oxTable[k].checkDOX(Math.abs(Math.round(rKMD)))){
+							
+							if(k > 0) matchResults[i] += tabHold;
+							
+							matchResults[i] += "\tNTC_HIT\t" + Math.round(nTC) + "\t" + (Math.abs(Math.round(nTC) - nTC)) + "\t" + inputRefSpecies[j].getName().split(";")[1] + " [" + Math.round(nTC) + ":" + Math.abs(Math.round(rKMD)) + "]" + inputRefSpecies[j].getName().split(";")[2];
+							
+							if(!oxTable[k].printDesc().equalsIgnoreCase("")){
+								matchResults[i] += ":" + oxTable[k].printDesc();
+							}
+							
+							matchResults[i] += "\t";
+							
+							//PPM CALCULATION
+							
+							double mTFA = -1;
+							double ppm = -1;
+							
+							if(inputRefSpecies[j].getFAtype() == 0){ //carbonyl MFA calculation								
+								
+								//mTFA = (Math.round(nTC)*denomHold) + inputRefSpecies[j].getFAtype()*exactMass("O") + 2*exactMass("H")*(0.5*inputRefSpecies[j].getNC() - inputRefSpecies[j].getNC() - Math.abs(Math.round(rKMD))) + oxTable[k].correctionFactorNum(this.exactMass("H"),this.exactMass("O"));
+								
+								mTFA = ((Math.round(nTC) + oxTable[k].correctionFactor(this.exactMass("H"),this.exactMass("O"),this.exactMass("C")))*(2*exactMass("H")+exactMass("C")) - 2*exactMass("H")*Math.abs(Math.round(rKMD)))/inputRefSpecies[j].getNC() - exactMass("H") + exactMass("O");
+								
+								mTFA *= inputRefSpecies[j].getNC();
+								
+								//System.out.print("NEW = " + mTFA + ",");
+								
+								//mTFA = ((inputRefSpecies[j].getNC())*(Math.round(numHold/denomHold)*exactMass("C") + (2*(Math.round(numHold/denomHold)) - 1)*(exactMass("H")) + exactMass("O"))) - (2*exactMass("H")*Math.abs(Math.round(rKMD)));
+								
+								//System.out.println("OLD = " + mTFA);
+							}
+							
+							if(inputRefSpecies[j].getFAtype() == -1){ //aliphatic MFA calculation
+								
+								mTFA = ((Math.round(nTC) + oxTable[k].correctionFactor(this.exactMass("H"),this.exactMass("O"),this.exactMass("C")))*(2*exactMass("H")+exactMass("C")) - 2*exactMass("H")*Math.abs(Math.round(rKMD)))/inputRefSpecies[j].getNC() + exactMass("H");
+								
+								mTFA *= inputRefSpecies[j].getNC();
+								
+								//mTFA = ((inputRefSpecies[j].getNC())*(Math.round((numHold)/denomHold)*exactMass("C") + (2*(Math.round((numHold)/denomHold)) + 1)*exactMass("H"))) - (2*exactMass("H")*Math.abs(Math.round(rKMD)));
+							}
+							
+							if(inputRefSpecies[j].getFAtype() > 0){ //plasmalogen or other NCC
+								mTFA = (Math.round(nTC)*denomHold) + inputRefSpecies[j].getFAtype()*exactMass("O") + 2*exactMass("H")*(0.5*inputRefSpecies[j].getNC() - inputRefSpecies[j].getFAtype() - Math.abs(Math.round(rKMD))) + oxTable[k].correctionFactorNum(this.exactMass("H"),this.exactMass("O"));
+							}
+							
+							double mTCalc = mTFA + inputRefSpecies[j].getmObs() + mAdduct;
+							ppm = 1E6*(mTCalc - (double)this.inputMObs.get(i))/mTCalc;
+							
+							matchResults[i] += Math.abs(ppm) + "\n";
+							
+							
+						}else{
+							matchResults[i] += "\tNTC_MISS\t" + Math.round(nTC) + "\t" + (Math.abs(Math.round(nTC) - nTC)) + "\n";
 						}
 						
-						double mTCalc = mTFA + inputRefSpecies[j].getmObs() + mAdduct;
-						ppm = 1E6*(mTCalc - (double)this.inputMObs.get(i))/mTCalc;
-						
-						matchResults[i] += Math.abs(ppm) + "\n";
-						
-						
-					}else{
-						matchResults[i] += "\tNTC_MISS\t" + Math.round(nTC) + "\t" + (Math.abs(Math.round(nTC) - nTC)) + "\n";
-					}
+					
+					}//end k-loop here
 					
 				}else{
 					matchResults[i] += this.delimitLine((String)inputMObsHold.get(i+1)) + "\tMISS:\t" + inputRefSpecies[j].getName() + "\t" + rKMD + "\t" + (Math.abs(Math.round(rKMD) - rKMD)) + "\n";
@@ -606,6 +685,8 @@ public class rkmdBackEnd{
 	
 	
 	public static void main(String[] args) throws Exception{ //testing only!
+		
+		
 		System.out.println("hello world 2");
 		Pair y = new Pair("hello", 2);
 		System.out.println(y.getName() + "\t\t" + y.getValue());
@@ -627,18 +708,18 @@ public class rkmdBackEnd{
 		
 		final String path = "/home/ankit/Dropbox/RKMDProject_2013/SVN_checkout/tests/";
 		
-		rkimp.rkmdBackEnd test = new rkimp.rkmdBackEnd(path+"masses3.csv", path+"periodicMasses.csv", path+"ReferenceKMD.csv");
+		rkimp.rkmdBackEnd test = new rkimp.rkmdBackEnd(path+"masses_ox_test.csv", path+"periodicMasses.csv", path+"ReferenceKMD.csv");
 		test.loadFileInput(null);
 		System.out.println(test.exactMass("Mn"));
-		test.calculate(0.5, 0.5, true);
+		test.calculate(0.5, 0.1, true);
 		
 		
-		test.writeToFile(path+"Results_DEBUG.txt", 1);
-		test.writeToFile(path+"Results_ALLHITS.txt", 2);
+		test.writeToFile(path+"Results_2DEBUG.txt", 1);
+		test.writeToFile(path+"Results_2ALLHITS.txt", 2);
 		test.setFilter(1);
-		test.writeToFile(path+"Results_POSITIVE.txt", 2);
+		test.writeToFile(path+"Results_2POSITIVE.txt", 2);
 		test.setFilter(2);
-		test.writeToFile(path+"Results_NEGATIVE.txt", 2);
+		test.writeToFile(path+"Results_2NEGATIVE.txt", 2);
 		test.setFilter(1);
 		System.out.println(test.printMatchResults());
 		
@@ -651,6 +732,7 @@ public class rkmdBackEnd{
 		for(int i = 0; i < tempHold.size(); i++){
 			System.out.println((String)tempHold.get(i));		
 		}*/
+		
 		
 		
 		
