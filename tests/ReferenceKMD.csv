@@ -2,7 +2,7 @@ Class,FA_type,Subclass ,Adduct,Headgroup_Mass,KMD,Number_of_Chains,MinC,MaxC,Max
 <None>,Carbonyl,CE,[M+NH4]+,385.34704,0.90135,1,9,26,5,,
 Ceramides/Ceramide_phosphates/Sphingomyelins,Carbonyl,Ceramide(d17:1),[M+H]+,284.258954,0.918603,1,2,26,11,,
 Ceramides/Ceramide_phosphates/Sphingomyelins,Carbonyl,Ceramide(d18:1),[M+H]+,298.274604,0.918603,1,2,26,26,,
-Glycerolipids,Carbonyl,DAG,[M+NH4]+,90.031695,0.886112,2,14,50,10,,
+Glycerolipids,Carbonyl,DAG,[M+NH4]+,90.031695,0.886112,2,14,70,10,,
 FattyAcid,Carbonyl,FA,[M-H]-,17.00274,0.947409,1,9,26,5,,
 Glycerophospholipids,Carbonyl,LPA,[M-H]-,171.005853,0.778561,1,9,26,5,,
 Glycerophospholipids,Carbonyl,LPC,[M+H]+,256.095002,0.786099,1,9,26,5,,
@@ -30,3 +30,4 @@ Glycerophospholipids,Carbonyl,PS,[M-H]-,257.030057,0.677066,2,14,50,10,,
 Glycerophospholipids,Plasmalogen,PSO,[M-H]-,257.030057,0.71341,2,14,50,10,,
 Glycerophospholipids,Aliphatic,PSOO,[M-H]-,257.030057,0.749755,2,14,50,10,,
 Glycerolipids,Carbonyl,TAG,[M+NH4]+,89.02387,0.849768,3,40,68,12,,
+Glycerophospholipids,Aliphatic,PAF,[M+H]+,298.105566,0.786099,1,10,26,3,29.49,35.34

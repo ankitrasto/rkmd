@@ -32,11 +32,16 @@ class oxFactor{
 	}
 	
 	double correctionFactor(double mH, double mO, double mC){
-		return (nh*mH + no*mO)/(mC+2*mH);
+		//System.out.println("OXCall (" + nh + "," + no + ") = " + (nh*mH + no*mO)/(mC+2*mH));
+		return (nh*mH + no*mO)/(2*mH + mC);
 	}
 	
 	double correctionFactorNum(double mH, double mO){
 		return (nh*mH + no*mO);
+	}
+	
+	double correctionFactorKMD(double kmdOriginalAux, double c3Aux, double c4Aux){
+		return kmdOriginalAux + no*c3Aux + nh*c4Aux;
 	}
 	
 	boolean checkDOX(double rkmdAux){
@@ -449,6 +454,9 @@ public class rkmdBackEnd{
 	public void calculate(double rkmdTol, double NTCTol, boolean useRetFilter) throws Exception{
 		final double c1 = 14/14.01565;
 		final double c2 = 0.013399;
+		final double c3 = -0.0229450649809451;
+		final double c4 = 0.00669965360151537;
+		
 		this.rkmdTolerance = rkmdTol;
 		this.NTCTolerance = NTCTol;
 		this.matchResults = new String[this.inputMObs.size()+1];
@@ -468,8 +476,15 @@ public class rkmdBackEnd{
 		for(int i = 0; i < inputMObs.size(); i++){
 			matchResults[i] = "";
 			for(int j = 0; j < inputRefSpecies.length; j++){
-				double rKMD = (1.0/c2)*((c1*(double)inputMObs.get(i))%1 - inputRefSpecies[j].getRefKMD()); //metric 1 (S1 - see implementation note, eq. 5)
+				
+				
+				for(int k = 0; k < oxTable.length; k++){ //k-loop start
+				
+				double refKMDCorrected = oxTable[k].correctionFactorKMD(inputRefSpecies[j].getRefKMD(), c3, c4);
+				
+				double rKMD = (1.0/c2)*((c1*(double)inputMObs.get(i))%1 - refKMDCorrected); //metric 1 (S1 - see implementation note, eq. 5)
 				//System.out.println(inputRefSpecies[j].getName() + "\t\t" + rKMD); //test verbose
+				
 				
 				boolean timeHit = true;
 				if(useRetFilter){
@@ -498,7 +513,7 @@ public class rkmdBackEnd{
 					if(adductExtract.charAt(2) == '-') mAdduct *= -1;
 					//System.out.println(adductExtract + "\t" + mAdduct);
 					
-					for(int k = 0; k < oxTable.length; k++){ //start k-loop
+					//for(int k = 0; k < oxTable.length; k++){ //start k-loop
 					
 						double mIso = (double)this.inputMObs.get(i) - (inputRefSpecies[j].getmObs() + mAdduct); //mIso gives M_FA, experimental!
 						double numHold = ((mIso + 2*exactMass("H")*Math.abs(Math.round(rKMD)))/inputRefSpecies[j].getNC()) + exactMass("H") - exactMass("O");
@@ -509,9 +524,8 @@ public class rkmdBackEnd{
 						if(inputRefSpecies[j].getFAtype() == -1){ //i.e, aliphatic
 							numHold += (exactMass("O") - 2*exactMass("H"));
 						}
-						
+												
 						double nTC = inputRefSpecies[j].getNC()*((numHold)/denomHold);
-						
 						
 						//modifiers for other getFAtype; semantically, getFAtype == NCC
 						if(inputRefSpecies[j].getFAtype() > 0){
@@ -520,13 +534,14 @@ public class rkmdBackEnd{
 						}
 						
 						//add correction factor generic to any equation
+						//if((double)inputMObs.get(i) == 1048.984729) System.out.println(inputRefSpecies[j].getName() + " , BEFORE_NTC = " + nTC);
+						
 						nTC = nTC - (oxTable[k].correctionFactor(this.exactMass("H"),this.exactMass("O"),this.exactMass("C")));
 						
-						//if((double)inputMObs.get(i) == 554.493157) System.out.println(inputRefSpecies[j].getName() + " , NTC = " + nTC);
 						
 						if((Math.abs(Math.round(nTC) - nTC) <= this.NTCTolerance) && inputRefSpecies[j].inRange(nTC) && oxTable[k].checkDOX(Math.abs(Math.round(rKMD)))){
 							
-							if(k > 0) matchResults[i] += tabHold;
+							//if(k > 0) matchResults[i] += tabHold;
 							
 							matchResults[i] += "\tNTC_HIT\t" + Math.round(nTC) + "\t" + (Math.abs(Math.round(nTC) - nTC)) + "\t" + inputRefSpecies[j].getName().split(";")[1] + " [" + Math.round(nTC) + ":" + Math.abs(Math.round(rKMD)) + "]" + inputRefSpecies[j].getName().split(";")[2];
 							
@@ -580,13 +595,13 @@ public class rkmdBackEnd{
 						}
 						
 					
-					}//end k-loop here
+					//}//end k-loop here
 					
 				}else{
 					matchResults[i] += this.delimitLine((String)inputMObsHold.get(i+1)) + "\tMISS:\t" + inputRefSpecies[j].getName() + "\t" + rKMD + "\t" + (Math.abs(Math.round(rKMD) - rKMD)) + "\n";
 				}
 			}
-			
+		}
 		}
 		
 		/*verbose testing
@@ -622,7 +637,7 @@ public class rkmdBackEnd{
 				for(int j = 0; j < lineHold.length; j++){
 					if(!(lineHold[j].indexOf("]+") < 0) && !(lineHold[j].indexOf("HIT") < 0)){
 						pW.println(lineHold[j]);
-					} 
+					}
 				}
 			}
 			
@@ -706,20 +721,20 @@ public class rkmdBackEnd{
 			}
 		}*/
 		
-		final String path = "/home/ankit/Dropbox/RKMDProject_2013/SVN_checkout/tests/";
+		final String path = "/home/ankit/Dropbox/RKMDProject_2013/GITHUB_checkout/rkmd/tests/";
 		
-		rkimp.rkmdBackEnd test = new rkimp.rkmdBackEnd(path+"masses_ox_test.csv", path+"periodicMasses.csv", path+"ReferenceKMD.csv");
+		rkimp.rkmdBackEnd test = new rkimp.rkmdBackEnd(path+"masses_ox_test_KET.csv", path+"periodicMasses.csv", path+"ReferenceKMD.csv");
 		test.loadFileInput(null);
 		System.out.println(test.exactMass("Mn"));
-		test.calculate(0.5, 0.1, true);
+		test.calculate(0.5, 0.001, true);
 		
 		
-		test.writeToFile(path+"Results_2DEBUG.txt", 1);
-		test.writeToFile(path+"Results_2ALLHITS.txt", 2);
+		test.writeToFile(path+"Results_KET_DEBUG.txt", 1);
+		test.writeToFile(path+"Results_KET_ALLHITS.txt", 2);
 		test.setFilter(1);
-		test.writeToFile(path+"Results_2POSITIVE.txt", 2);
+		test.writeToFile(path+"Results_KET_POSITIVE.txt", 2);
 		test.setFilter(2);
-		test.writeToFile(path+"Results_2NEGATIVE.txt", 2);
+		test.writeToFile(path+"Results_KET_NEGATIVE.txt", 2);
 		test.setFilter(1);
 		System.out.println(test.printMatchResults());
 		

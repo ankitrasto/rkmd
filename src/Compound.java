@@ -2,6 +2,7 @@
  * Basic data structure for storing reference lipid parameters
  * <p> Immutable after construction
  * <p> Used in the RKMD back-end for iterative matching and calculations
+ * LICENSE: GPL v.3.0.
  * */
 
 package rkimp;
