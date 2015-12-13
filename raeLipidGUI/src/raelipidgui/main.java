@@ -53,7 +53,7 @@ public class main extends javax.swing.JFrame {
                 pgStatus.setValue(50);
                 
                 
-                engine.calculate((Double)components.get(5), (Double)components.get(6), (Boolean)components.get(9));              
+                engine.calculate((Double)components.get(5), (Double)components.get(6), (Boolean)components.get(9), (Boolean)components.get(10));              
             }else{ //1 = using manual text entry formatted as a CSV file. 
                //temporarily generate a CSV file from the manual text field box
                System.out.println("Using Manual Entry");
@@ -76,7 +76,7 @@ public class main extends javax.swing.JFrame {
                pgStatus.setValue(50);
                
                
-               engine.calculate((Double)components.get(5), (Double)components.get(6), (Boolean)components.get(9));
+               engine.calculate((Double)components.get(5), (Double)components.get(6), (Boolean)components.get(9), (Boolean)components.get(10));
             }
             
             
@@ -164,6 +164,7 @@ public class main extends javax.swing.JFrame {
         btnBrowseOut = new javax.swing.JButton();
         txtOutputDest = new javax.swing.JTextField();
         chkRetFilter = new javax.swing.JCheckBox();
+        chkOxFilter = new javax.swing.JCheckBox();
         jPanel4 = new javax.swing.JPanel();
         btnCalculate = new javax.swing.JButton();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -321,6 +322,13 @@ public class main extends javax.swing.JFrame {
             }
         });
 
+        chkOxFilter.setText("Screen for Oxidized Lipids");
+        chkOxFilter.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                chkOxFilterActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
@@ -328,6 +336,7 @@ public class main extends javax.swing.JFrame {
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(chkOxFilter)
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -355,7 +364,7 @@ public class main extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(btnBrowseOut))
                     .addComponent(chkRetFilter))
-                .addContainerGap(77, Short.MAX_VALUE))
+                .addContainerGap(41, Short.MAX_VALUE))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -381,7 +390,9 @@ public class main extends javax.swing.JFrame {
                     .addComponent(chxResultsToFile, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(chkRetFilter)
-                .addContainerGap(141, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(chkOxFilter)
+                .addContainerGap(129, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("(2) Calculation Parameters", jPanel3);
@@ -433,7 +444,7 @@ public class main extends javax.swing.JFrame {
 
         jLabel3.setForeground(new java.awt.Color(255, 255, 0));
         jLabel3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/gpl-v3-logo.png"))); // NOI18N
-        jLabel3.setText("<html>  Front-End Version: 0.9 (beta) <br> Back-End Version: RKMD revision 28 <br> http://rkmd.googlecode.com <br> License: GPL v3 <br> </html>");
+        jLabel3.setText("<html>  Front-End Version: 1.0 (beta) <br> Back-End Version: 2015-Dec-13 <br> https://github.com/ankitrasto <br> License: GPL v3 <br> </html>");
 
         jLabel4.setForeground(new java.awt.Color(255, 255, 0));
         jLabel4.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
@@ -450,22 +461,20 @@ public class main extends javax.swing.JFrame {
                     .addComponent(jLabel1)
                     .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 320, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, 290, Short.MAX_VALUE)
+                .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, 293, Short.MAX_VALUE)
                 .addGap(18, 18, 18))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 293, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addContainerGap()
                         .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(27, 27, 27)
-                        .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 299, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(47, Short.MAX_VALUE))
+                        .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(60, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("About", jPanel1);
@@ -647,6 +656,7 @@ public class main extends javax.swing.JFrame {
             components.add(this.chxResultsToFile.isSelected()); //7, Boolean
             components.add(this.txtOutputDest.getText()); //8, String
             components.add(this.chkRetFilter.isSelected()); //9, Boolean
+            components.add(this.chkOxFilter.isSelected()); //10, Boolean
             
             //execute!
             this.pgStatus.setStringPainted(true);
@@ -731,6 +741,10 @@ public class main extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_chkRetFilterActionPerformed
 
+    private void chkOxFilterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chkOxFilterActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_chkOxFilterActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -773,6 +787,7 @@ public class main extends javax.swing.JFrame {
     private javax.swing.JButton btnClearManual;
     private javax.swing.JComboBox cbxFilter;
     private javax.swing.JComboBox cbxInputMethod;
+    private javax.swing.JCheckBox chkOxFilter;
     private javax.swing.JCheckBox chkRetFilter;
     private javax.swing.JCheckBox chxResultsToFile;
     private javax.swing.JLabel jLabel1;

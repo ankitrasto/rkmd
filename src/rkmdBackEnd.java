@@ -451,7 +451,7 @@ public class rkmdBackEnd{
 	//}
 	
 	
-	public void calculate(double rkmdTol, double NTCTol, boolean useRetFilter) throws Exception{
+	public void calculate(double rkmdTol, double NTCTol, boolean useRetFilter, boolean useOxFilter) throws Exception{
 		final double c1 = 14/14.01565;
 		final double c2 = 0.013399;
 		final double c3 = -0.0229450649809451;
@@ -463,12 +463,21 @@ public class rkmdBackEnd{
 		matchResults[this.inputMObs.size()] = (String)inputMObsHold.get(0);
 		
 		//oxidation table object initialization
-		oxTable = new oxFactor[5];
-		oxTable[0] = new oxFactor(0,0,-1,""); //wildcard/uncorrected table entry
-		oxTable[1] = new oxFactor(0,1,1,"ketone");
-		oxTable[2] = new oxFactor(2,1,1,"hydroxyl");
-		oxTable[3] = new oxFactor(1,2,1,"peroxide_radical");
-		oxTable[4] = new oxFactor(2,2,1,"peracid");
+		
+		
+		if(useOxFilter){
+			oxTable = new oxFactor[5];
+			oxTable[0] = new oxFactor(0,0,-1,""); //wildcard/uncorrected table entry
+			oxTable[1] = new oxFactor(0,1,1,"ketone");
+			oxTable[2] = new oxFactor(2,1,1,"hydroxyl");
+			oxTable[3] = new oxFactor(1,2,1,"peroxide_radical");
+			oxTable[4] = new oxFactor(2,2,1,"peracid");
+		}else{
+			oxTable = new oxFactor[1];
+			oxTable[0] = new oxFactor(0,0,-1,""); //wildcard/uncorrected table entry
+		}
+	
+		
 		
 		
 		System.out.println("Retention Time Filtering: " + useRetFilter);
@@ -723,10 +732,10 @@ public class rkmdBackEnd{
 		
 		final String path = "/home/ankit/Dropbox/RKMDProject_2013/GITHUB_checkout/rkmd/tests/";
 		
-		rkimp.rkmdBackEnd test = new rkimp.rkmdBackEnd(path+"masses_ox_test_KET.csv", path+"periodicMasses.csv", path+"ReferenceKMD.csv");
+		rkimp.rkmdBackEnd test = new rkimp.rkmdBackEnd(path+"masses_ox_test_UNOX.csv", path+"periodicMasses.csv", path+"ReferenceKMD.csv");
 		test.loadFileInput(null);
 		System.out.println(test.exactMass("Mn"));
-		test.calculate(0.5, 0.001, true);
+		test.calculate(0.5, 0.001, true, true);
 		
 		
 		test.writeToFile(path+"Results_KET_DEBUG.txt", 1);
