@@ -8,9 +8,10 @@ rae-Lipid/RKMD (rae: Roger, Ankit, Elna) is a basic console and GUI-based screen
 <h2>Release Notes</h2>
 
 <b>2015 Dec 13: RKMD v.0.6, commit 205ecbc <a href='https://googledrive.com/host/0Bx4y1oB8xOUva21FdVY4OGtUTjg/raeLipid_v.0.6.zip'>(Direct Download)</a></b>
-<ul><li>new back-end and front-end update with oxidized lipid screening support
-    <li>bug fixes and code restructuring for accurate ppm calculations
-</li><li></li></ul>
+<ul><li>new back-end and front-end update with oxidized lipid screening support</li>
+    <li>bug fixes and code restructuring for accurate ppm calculations</li>
+    <li>please note that an updated user manual to reflect a few GUI changes is a work in progress</li>
+    </ul>
 
 <b>2015 Mar 21: RKMD <a href='https://code.google.com/p/rkmd/source/detail?r=29'>Revision 29</a>, v.0.5.4 (rae-LipID GUI) <a href='https://googledrive.com/host/0Bx4y1oB8xOUva21FdVY4OGtUTjg/raeLipid_v.0.5.4.zip'>(Direct Download)</a></b>
 <ul><li>formatting changes to output files for easier import into spreadsheet programs<br>
