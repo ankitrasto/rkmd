@@ -1,11 +1,17 @@
 <img src='https://googledrive.com/host/0Bx4y1oB8xOUva21FdVY4OGtUTjg/logo_5_banner.png' alt=''>
 
-<h1>Overview/Announcements</h1>
+<h2>Overview/Announcements</h2>
 rae-Lipid/RKMD (rae: Roger, Ankit, Elna) is a basic console and GUI-based screening tool which calculates the Reference Kendrick Mass Defect and the total number of carbon atoms (NCT) from a raw, experimental array of observed m/z values in order to identify m/z values which may represent compounds of a known lipid species. Input consists of the raw array of m/z ions as well as literature-derived RKMDs and NCTs through which to iterate and match with experimental data.<br>
 <br>
 <b>2014 Dec 16: A user manual has been released!</b> <a href='https://drive.google.com/file/d/0Bx4y1oB8xOUvMmh4c3NtTDFOdTg/view?usp=sharing'>(View)</a> or <a href='https://googledrive.com/host/0Bx4y1oB8xOUva21FdVY4OGtUTjg/RKMD_UserGuide.pdf'>(Download)</a>. This version guides users through technical operation of raeLipID. The theory and background of the software is omitted but is planned to be incorporated into the user guide.<br>
 <br>
-<h1>Release Notes</h1>
+<h2>Release Notes</h2>
+
+<b>2015 Dec 13: RKMD v.0.6, commit 205ecbc <a href='https://googledrive.com/host/0Bx4y1oB8xOUva21FdVY4OGtUTjg/raeLipid_v.0.6.zip'>(Direct Download)</a></b>
+<ul><li>new back-end and front-end update with oxidized lipid screening support</li>
+    <li>bug fixes and code restructuring for accurate ppm calculations</li>
+    <li>please note that an updated user manual to reflect a few GUI changes is a work in progress</li>
+    </ul>
 
 <b>2015 Mar 21: RKMD <a href='https://code.google.com/p/rkmd/source/detail?r=29'>Revision 29</a>, v.0.5.4 (rae-LipID GUI) <a href='https://googledrive.com/host/0Bx4y1oB8xOUva21FdVY4OGtUTjg/raeLipid_v.0.5.4.zip'>(Direct Download)</a></b>
 <ul><li>formatting changes to output files for easier import into spreadsheet programs<br>
