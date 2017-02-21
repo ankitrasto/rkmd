@@ -11,7 +11,7 @@ rae-Lipid/RKMD (rae: Roger, Ankit, Elna) is a basic console and GUI-based screen
 <ul> This is an excel tool developed by Roger and Elna to calculate KMD and cross check against nominal values as well. Click on "view raw" to use and download.   
     </ul>
 
-<b>2015 Dec 13: RKMD v.0.6, commit 205ecbc <a href='https://googledrive.com/host/0Bx4y1oB8xOUva21FdVY4OGtUTjg/raeLipid_v.0.6.zip'>(Direct Download)</a></b>
+<b>2015 Dec 13: RKMD v.0.6, commit 205ecbc <a href='https://drive.google.com/open?id=0Bx4y1oB8xOUvdWtTQXpwWXZSLVU'>(View and Download)</a></b>
 <ul><li>new back-end and front-end update with oxidized lipid screening support</li>
     <li>bug fixes and code restructuring for accurate ppm calculations</li>
     <li>please note that an updated user manual to reflect a few GUI changes is a work in progress</li>
